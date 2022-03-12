@@ -2,7 +2,7 @@ from .base import AuthBase
 
 
 class Authenticator(AuthBase):
-    '''Authenticator'''
+    """Authenticator"""
 
     def __init__(self):
         AuthBase.__init__(self)
