@@ -1,3 +1,5 @@
+import testing.postgresql
+
 from pytest import fixture
 
 from main import create_app
@@ -9,7 +11,7 @@ from apps.account.models import Account
 @fixture
 def engine():
     return create_engine(
-    "postrgresa://localhost/test_database")
+    "postgres://localhost/test_database")
 
 
 @fixture(scope="session")
