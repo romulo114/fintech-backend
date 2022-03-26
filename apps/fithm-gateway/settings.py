@@ -20,14 +20,14 @@ POSTGRES_HOST = os.environ.get('POSTGRES_HOST') or 'localhost'
 POSTGRES_PORT = os.environ.get('POSTGRES_PORT') or 5432
 POSTGRES_USER = os.environ.get('POSTGRES_USER')
 POSTGRES_PASS = os.environ.get('POSTGRES_PASSWORD')
-POSTGRES_DB = os.environ.get('POSTGRES_DB', 'fithm')
+GATEWAY_DB = os.environ.get('POSTGRES_DB', 'gateway')
 DEBUG = os.environ.get('DEBUG') == 'True'
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 STORAGE_DIR = os.path.join(ROOT_DIR, 'storage')
 RESOURCES_DIR = os.path.join(STORAGE_DIR, 'resources')
 
-POSTGRES_DB_URL = f'postgresql+psycopg2://{POSTGRES_USER}:{POSTGRES_PASS}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}'
+GATEWAY_DB_URL = f'postgresql+psycopg2://{POSTGRES_USER}:{POSTGRES_PASS}@{POSTGRES_HOST}:{POSTGRES_PORT}/{GATEWAY_DB}'
 
 LOG_CONFIG = { 'level': 'DEBUG', 'handlers': ['wsgi'] } if DEBUG \
         else { 'level': 'INFO', 'handlers': ['wsgi'] }

@@ -4,10 +4,10 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql.schema import Column
 from sqlalchemy.sql.sqltypes import Boolean
-from settings import POSTGRES_DB_URL
+from settings import GATEWAY_DB_URL
 
 engine = create_engine(
-    POSTGRES_DB_URL,
+    GATEWAY_DB_URL,
     convert_unicode=True,
     max_overflow=100
 )
