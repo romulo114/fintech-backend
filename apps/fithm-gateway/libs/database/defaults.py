@@ -1,4 +1,4 @@
-from apps.models import Role, RolesUsers, User
+from apps.auth.models import Role, RolesUsers, User
 from apps.auth.lib.auth.authenticator import Authenticator
 from libs.depends.register import container
 from libs.roles import RoleValues
@@ -21,13 +21,13 @@ def default_values():
         name=RoleValues.basic.value,
         description='General user'
     )
-    premimu_role = Role(
+    premium_role = Role(
         name = RoleValues.premium.value,
         description='Premium user with more abilities'
     )
     db_session.add(admin_role)
     db_session.add(basic_role)
-    db_session.add(premimu_role)
+    db_session.add(premium_role)
 
     # add admin user
     authenticator: Authenticator = container.get(Authenticator)

@@ -5,7 +5,8 @@ from libs.email.message import make_mail, send_msg
 from libs.database import db_session
 from libs.depends.entry import container
 from .lib.auth.authenticator import Authenticator
-from apps.models import User, Business
+from apps.auth.models import User
+from apps.models import Business
 from threading import Thread
 
 

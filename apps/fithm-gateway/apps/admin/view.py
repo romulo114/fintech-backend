@@ -1,6 +1,6 @@
 from flask import abort
 from libs.database import db_session
-from apps.models import User
+from apps.auth.models import User
 
 
 class AdminView:
