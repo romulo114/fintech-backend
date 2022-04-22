@@ -2,7 +2,7 @@ from datetime import datetime
 from uuid import uuid4
 from flask import abort, request, g, current_app
 from libs.email.message import make_mail, send_msg
-from libs.database import db_session
+from libs.database import db_session, engine
 from libs.depends.entry import container
 from .lib.auth.authenticator import Authenticator
 from apps.auth.models import User
