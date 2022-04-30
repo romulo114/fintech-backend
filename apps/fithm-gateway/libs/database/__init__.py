@@ -5,9 +5,6 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql.schema import Column
 from sqlalchemy.sql.sqltypes import Boolean
 
-
-
-
 db_session = scoped_session(
     sessionmaker(autocommit=False, autoflush=False)
 )
@@ -29,9 +26,9 @@ def init_db(app: Flask, session):
         session.remove()
 
 
-def create_tables():
+def create_tables(engine):
     import apps.models
-    Base.metadata.create_all(bind=engine)
+    Base.metadata.create_all(engine)
 
 
 def populate_default():
@@ -39,7 +36,7 @@ def populate_default():
     default_values()
 
 
-def drop_tables():
+def drop_tables(engine):
     import apps.models
-    Base.metadata.drop_all(bind=engine)
+    Base.metadata.drop_all(engine)
 

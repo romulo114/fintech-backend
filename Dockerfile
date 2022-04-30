@@ -1,6 +1,6 @@
 FROM python:3 as base
 
-ARG ENVIRONMENT=prod
+ARG ENVIRONMENT=dev
 
 ENV UNAME=andrii
 ARG UID=1000
@@ -32,7 +32,7 @@ RUN chmod +x /usr/bin/start.sh
 
 USER $UNAME
 RUN pip install -r requirements.txt
-RUN if [ "x$ENVIRONMENT" = "xprod" ] ; \
+RUN if [ "$ENVIRONMENT" = "prod" ] ; \
     then echo "Production build, no dev dependencies" && pip install -r requirements.txt ; \
     else echo "Dev build" && pip install -r requirements_dev.txt ; \
     fi
@@ -47,7 +47,7 @@ COPY apps/fithm-service/requirements.txt .
 COPY apps/fithm-service/requirements_dev.txt .
 
 RUN pip install -r requirements.txt
-RUN if [ "x$ENVIRONMENT" = "xprod" ] ; \
+RUN if [ "$ENVIRONMENT" = "prod" ] ; \
     then echo "Production build, no dev dependencies" && pip install -r requirements.txt ; \
     else echo "Dev build" && pip install -r requirements_dev.txt ; \
     fi

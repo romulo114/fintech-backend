@@ -2,7 +2,7 @@ from datetime import datetime
 from uuid import uuid4
 from flask import abort, request, g, current_app
 from libs.email.message import make_mail, send_msg
-from libs.database import db_session, engine
+from libs.database import db_session
 from libs.depends.entry import container
 from .lib.auth.authenticator import Authenticator
 from apps.auth.models import User
@@ -68,7 +68,10 @@ class AuthView:
             abort(403, "Wrong password")
 
         user.current_login_at = datetime.utcnow()
-        user.current_login_ip = request.remote_addr
+        try:
+            user.current_login_ip = request.remote_addr
+        except RuntimeError:
+            user.current_login_ip = "127.0.0.1"
         user.login_count = (user.login_count or 0) + 1
         user.access = str(uuid4())
         db_session.commit()
