@@ -1,5 +1,8 @@
 import os
 import pytest
+import requests
+import requests_mock
+
 from flask import Flask
 from pytest import fixture
 
