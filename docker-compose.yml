@@ -11,7 +11,7 @@ services:
     container_name: tradeshop
     command: bash -c "start.sh"
     depends_on:
-      - gateway
+      - database
     restart: on-failure
     volumes:
       - ./apps/fithm-service/:/app/src/

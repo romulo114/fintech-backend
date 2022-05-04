@@ -28,7 +28,7 @@ def init_db(app: Flask, session):
 
 def create_tables(engine):
     import apps.models
-    Base.metadata.create_all(engine)
+    Base.metadata.create_all(bind=engine)
 
 
 def populate_default():

@@ -6,7 +6,7 @@ from config import Config
 from settings import GATEWAY_DB_URL
 
 
-from libs.database import init_db, db_session, create_tables
+from libs.database import init_db, db_session
 from libs.middleware.auth import init_middlewares
 from libs.email.message import init_mail
 
@@ -26,7 +26,6 @@ def create_app():
     init_mail(app)
     init_db(app, db_session)
 
-    create_tables(engine)
     from apps.api_v1 import api_blueprint as api_v1
     app.register_blueprint(api_v1, url_prefix='/api/v1')
 

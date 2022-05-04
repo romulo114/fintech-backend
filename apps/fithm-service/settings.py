@@ -1,4 +1,6 @@
 import os
+from libs.depends.register import register_all
+registered = register_all()
 
 APP_TITLE = 'fithm'
 ENVIRONMENT = os.environ.get('ENVIRONMENT', 'prod')
