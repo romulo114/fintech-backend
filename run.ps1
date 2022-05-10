@@ -18,7 +18,7 @@ $env:FITHM_SMTP_PORT='587'
 
 $env:FITHM_SMTP_USER='info@fithm.com'
 
-$env:FITHM_SMTP_PASS='Horse@20180902'
+$env:FITHM_SMTP_PASS='Bp4vPAAAbAMAtQk$'
 
 $env:FITHM_ADMIN_MAIL='info@fithm.com'
 

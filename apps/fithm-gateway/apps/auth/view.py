@@ -30,7 +30,7 @@ class AuthView:
             email=email,
             username=username,
             password=self.authenticator.hash_password(password),
-            active=False,
+            active=True,
         )
 
         current_app.logger.debug(f"user: {user}")
@@ -39,12 +39,12 @@ class AuthView:
         db_session.add(business)
         db_session.commit()
 
-        msg = self.__make_confirm_mail(user)
-
-        def post_request():
-            send_msg(msg)
-
-        Thread(target=post_request).start()
+        # msg = self.__make_confirm_mail(user)
+        #
+        # def post_request():
+        #     send_msg(msg)
+        #
+        # Thread(target=post_request).start()
 
         return user.as_dict()
 

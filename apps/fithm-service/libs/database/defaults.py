@@ -1,11 +1,10 @@
 from apps.model.models import Model
 from apps.account.models import Account
 from apps.portfolio.models import Portfolio
-from libs.database import db_session
 from libs.depends.register import container
 
 
-def default_values():
+def default_values(db_session):
     '''Populate default values'''
 
     # add account

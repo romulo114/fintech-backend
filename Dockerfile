@@ -2,7 +2,7 @@ FROM python:3 as base
 
 ARG ENVIRONMENT=dev
 
-ENV UNAME=andrii
+ENV UNAME=rye
 ARG UID=1000
 ARG GID=1000
 RUN groupadd -g $GID -o $UNAME
@@ -45,6 +45,10 @@ FROM base as tradeshop
 WORKDIR $WORKDIR
 COPY apps/fithm-service/requirements.txt .
 COPY apps/fithm-service/requirements_dev.txt .
+
+USER root
+COPY apps/fithm-gateway/start.sh /usr/bin/
+RUN chmod +x /usr/bin/start.sh
 
 RUN pip install -r requirements.txt
 RUN if [ "$ENVIRONMENT" = "prod" ] ; \

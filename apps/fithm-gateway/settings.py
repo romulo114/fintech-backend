@@ -35,7 +35,7 @@ LOG_CONFIG = { 'level': 'DEBUG', 'handlers': ['wsgi'] } if DEBUG \
         else { 'level': 'INFO', 'handlers': ['wsgi'] }
 
 if not FITHM_USE_SMTP:
-    FITHM_SMTP_HOST = 'smtp.mailtrap.io'
-    FITHM_SMTP_PORT = 2525
-    FITHM_SMTP_USER = '19e9588c473008'
-    FITHM_SMTP_PASS = '1e9b064e2329d7'
+    FITHM_SMTP_HOST = 'smtp.fithm.com'
+    FITHM_SMTP_PORT = 587
+    FITHM_SMTP_USER = 'info'
+    FITHM_SMTP_PASS = 'Bp4vPAAAbAMAtQk$'

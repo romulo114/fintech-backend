@@ -11,7 +11,7 @@ db_session = scoped_session(
 
 
 Base = declarative_base()
-Base.query = db_session.query_property()
+
 
 class Stateful(Base):
     __abstract__ = True
@@ -28,12 +28,14 @@ def init_db(app: Flask, session):
 
 def create_tables(engine):
     import apps.models
+    Base.query = db_session.query_property()
     Base.metadata.create_all(bind=engine)
 
 
-def populate_default():
+def populate_default(engine):
     from .defaults import default_values
-    default_values()
+    db_session.configure(bind=engine)
+    default_values(db_session)
 
 
 def drop_tables(engine):
