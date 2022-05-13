@@ -2,7 +2,7 @@ from typing import List
 from flask import current_app, g, abort
 from libs.database import db_session
 from .models import Account
-from apps.models import Business
+from ..business.models import Business
 
 class AccountView:
 

@@ -15,7 +15,7 @@ from apps.account.models import Account, AccountPosition
 from apps.model.models import Model, ModelPosition
 from apps.portfolio.models import Portfolio
 from apps.trade.models import Trade, TradeRequest
-
+from apps.business.models import Business
 
 class RolesUsers(Base):
     '''M-to-M relation between roles and users'''
@@ -75,28 +75,6 @@ class User(Base):
             'last_name': self.last_name,
             'phone_number': self.phone_number,
         }
-
-
-class Business(Base):
-    '''User business'''
-
-    __tablename__ = 'businesses'
-
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    models = relationship("Model", back_populates="business",
-                          cascade="all, delete, delete-orphan")
-    portfolios = relationship(
-        "Portfolio", back_populates="business", cascade="all, delete, delete-orphan")
-    trades = relationship("Trade", back_populates="business",
-                          cascade="all, delete, delete-orphan")
-    accounts = relationship(
-        "Account", back_populates="business", cascade="all, delete, delete-orphan")
-    user = relationship('User', back_populates='business', single_parent=True,
-                        cascade="all, delete, delete-orphan")
-
-    def as_dict(self):
-        return ({'id': self.id, 'user_id': self.user_id})
 
 
 class TradePortfolio(Base):
