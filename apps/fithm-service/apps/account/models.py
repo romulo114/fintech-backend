@@ -23,7 +23,7 @@ class Account(Stateful):
     )
 
     def as_dict(self):
-        result = {'id': self.id, 'user_id': self.business.user_id, 'account_number': self.account_number,
+        result = {'id': self.id, 'account_number': self.account_number,
                   'broker_name': self.broker_name, 'portfolio_id': self.portfolio_id}
         return result
 

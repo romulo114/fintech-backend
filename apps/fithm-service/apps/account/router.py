@@ -17,7 +17,7 @@ class Accounts(Resource):
 
     @account.doc('create account')
     def post(self):
-        '''Create an account for a user'''
+        '''Create an account for a business'''
 
         return view.create_account(request.json)
 

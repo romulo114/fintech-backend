@@ -11,7 +11,7 @@ class AccountView:
 
 
     def get_accounts(self):
-        '''Get all accounts owned by user'''
+        '''Get all accounts owned by business'''
 
         business: Business = g.business
         accounts: List[Account] = business.accounts
@@ -21,7 +21,7 @@ class AccountView:
 
 
     def create_account(self, body: dict) -> dict:
-        '''Create a new account for the user'''
+        '''Create a new account for the business'''
 
         # check existence
         accounts = db_session.query(Account).filter(

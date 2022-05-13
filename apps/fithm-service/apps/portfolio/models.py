@@ -23,7 +23,7 @@ class Portfolio(Stateful):
                                      cascade="all, delete, delete-orphan")
 
     def as_dict(self):
-        result = {'id': self.id, 'user_id': self.business.user_id, 'name': self.name, 'model': None,
+        result = {'id': self.id, 'name': self.name, 'model': None,
                   'trades': [], 'accounts': []}
         if self.accounts:
             result['accounts'] = [a.as_dict() for a in self.accounts]

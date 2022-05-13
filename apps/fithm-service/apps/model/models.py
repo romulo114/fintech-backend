@@ -35,7 +35,6 @@ class Model(Stateful):
             'is_public': self.is_public,
             'description': self.description
         }
-        result['user_id'] = self.business.user_id
         if self.allocation:
             result['positions'] = [a.as_dict() for a in self.allocation]
         if self.keywords:

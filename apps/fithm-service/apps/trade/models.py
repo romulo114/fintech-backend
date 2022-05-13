@@ -25,7 +25,7 @@ class Trade(Stateful):
                           cascade="all, delete, delete-orphan")
 
     def as_dict(self):
-        result = {'id': self.id, 'name': self.name, 'user_id': self.business.user_id, 'created': str(self.created), 'status': str(self.status),
+        result = {'id': self.id, 'name': self.name, 'created': str(self.created), 'status': str(self.status),
                   'portfolios': [], 'prices': []}
         if self.portfolios:
             result['portfolios'] = [p.as_dict() for p in self.portfolios]

@@ -10,7 +10,7 @@ class ModelView:
 
 
     def get_models(self, args: dict) -> list:
-        '''Get all models for the user'''
+        '''Get all models for the business'''
 
         business: Business = g.business
         public = args['public'] == 'true'
@@ -25,7 +25,7 @@ class ModelView:
 
 
     def create_model(self, body: dict) -> dict:
-        '''Create a new model for the user'''
+        '''Create a new model for the business'''
 
         public = body['public']
         model = Model(

@@ -21,4 +21,4 @@ class Business(Base):
     accounts = relationship("Account", back_populates="business", cascade="all, delete, delete-orphan")
 
     def as_dict(self):
-        return ({'id': self.id, 'user_id': self.user_id})
+        return ({'id': self.id})

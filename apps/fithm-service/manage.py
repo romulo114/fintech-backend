@@ -27,7 +27,7 @@ def create_db():
 
 @db_cli.command('drop')
 def drop_db():
-    drop_tables()
+    drop_tables(engine)
 
 
 app.cli.add_command(db_cli)

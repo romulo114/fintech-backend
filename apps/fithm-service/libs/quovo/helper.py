@@ -1,6 +1,5 @@
 from flask import current_app
 import requests as req
-from apps.models import User
 from libs.depends.entry import container
 from .base import QuovoRequest
 
