@@ -3,8 +3,9 @@ from flask import json, request, current_app, g, abort
 import requests
 
 
-def forward_request(body: Optional[Dict] = None, params: Optional[Dict] = None) -> str:
-    req_path = request.path
+def forward_request(path: Optional[str] = None, body: Optional[Dict] = None, params: Optional[Dict] = None) -> str:
+    if not path:
+        req_path = request.path
     base_url = current_app.config['SERVICE_URL']
 
     url = f'{base_url}{req_path}'

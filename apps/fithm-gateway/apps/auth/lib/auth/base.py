@@ -111,6 +111,7 @@ class AuthBase:
 
         user.active = True
         db_session.commit()
+        return user
 
     def get_user_from_refresh(self, refresh_token: str):
         """Re-generate token from the refresh token"""

@@ -12,7 +12,7 @@ from libs.database import Base, Stateful
 class Account(Stateful):
     __tablename__ = 'accounts'
     id = Column(Integer, primary_key=True)
-    business_id = Column(Integer, ForeignKey('businesses.id'), nullable=False)
+    business_id = Column(Integer, ForeignKey('business.id'), nullable=False)
     account_number = Column(String, nullable=False)
     broker_name = Column(String, nullable=False)
     portfolio_id = Column(Integer, ForeignKey('portfolios.id'), nullable=True)

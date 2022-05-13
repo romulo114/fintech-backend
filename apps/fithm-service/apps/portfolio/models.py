@@ -11,7 +11,7 @@ from libs.database import Base, Stateful
 class Portfolio(Stateful):
     __tablename__ = 'portfolios'
     id = Column(Integer, primary_key=True)
-    business_id = Column(Integer, ForeignKey('businesses.id'), nullable=False)
+    business_id = Column(Integer, ForeignKey('business.id'), nullable=False)
     model_id = Column(Integer, ForeignKey('models.id'))
     name = Column(String)
     business = relationship("Business", back_populates="portfolios")

@@ -4,6 +4,7 @@ from flask import abort, request, g, current_app
 from libs.email.message import make_mail, send_msg
 from libs.database import db_session
 from libs.depends.entry import container
+from libs.helper.forward import forward_request
 from .lib.auth.authenticator import Authenticator
 from apps.auth.models import User
 from apps.models import Business
@@ -95,7 +96,9 @@ class AuthView:
     def confirm(self, token: str):
         """Confirm email"""
 
-        self.authenticator.confirm_email(token)
+        user = self.authenticator.confirm_email(token)
+
+        forward_request(req_path='/business', body={"business": user.business_id})
         return {"result": "success"}
 
     def send_confirm(self):

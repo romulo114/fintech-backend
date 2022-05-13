@@ -15,7 +15,7 @@ class Trade(Stateful):
     __tablename__ = 'trades'
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
-    business_id = Column(Integer, ForeignKey('businesses.id'), nullable=False)
+    business_id = Column(Integer, ForeignKey('business.id'), nullable=False)
     created = Column(DateTime, nullable=False)
     status = Column(Boolean, nullable=False)
     business = relationship("Business", back_populates="trades")

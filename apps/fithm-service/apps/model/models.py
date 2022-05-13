@@ -17,7 +17,7 @@ class Model(Stateful):
     __tablename__ = 'models'
 
     id = Column(Integer, primary_key=True)
-    business_id = Column(Integer, ForeignKey('businesses.id'), nullable=False)
+    business_id = Column(Integer, ForeignKey('business.id'), nullable=False)
     name = Column(String)
     description = Column(String)
     keywords = Column("data", postgresql.ARRAY(String))
