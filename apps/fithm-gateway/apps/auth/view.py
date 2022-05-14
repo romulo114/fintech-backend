@@ -98,7 +98,7 @@ class AuthView:
 
         user = self.authenticator.confirm_email(token)
 
-        forward_request(req_path='/business', body={"business": user.business_id})
+        forward_request(req_path='/business', body={"business": user.business_id, "create_business": True})
         return {"result": "success"}
 
     def send_confirm(self):
