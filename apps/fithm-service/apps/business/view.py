@@ -35,8 +35,6 @@ class BusinessView:
             broker_name=body['broker_name'],
             business_number=body['business_number']
         )
-        if 'portfolio_id' in body and body['portfolio_id']:
-            business.portfolio_id = body['portfolio_id']
 
         db_session.add(business)
         db_session.commit()

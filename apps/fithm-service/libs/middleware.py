@@ -14,11 +14,11 @@ def init_middlewares(app: Flask):
         current_app.logger.debug(f'request params: {request.args}')
         current_app.logger.debug(f'request body: {request.json}')
         if request.method == 'GET' or request.method == 'DELETE':
-            user = request.args['user_id'] if 'user_id' in request.args else None
+            business_id = request.args['business_id'] if 'business_id' in request.args else None
         else:
-            user = request.json['user_id'] if 'user_id' in request.json else None
+            business_id = request.json['business_id'] if 'business_id' in request.json else None
 
-        business: Business = db_session.query(Business).filter(Business.user_id == user).first()
+        business: Business = db_session.query(Business).filter(Business.id == business_id).first()
         g.business = business
         if g.business:
             current_app.logger.debug(f'requesting business id: {g.business.id}')

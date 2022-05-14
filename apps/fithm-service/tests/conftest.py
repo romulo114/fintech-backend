@@ -8,8 +8,6 @@ from pytest import fixture
 
 # from pytest_postgresql import factories
 
-from apps.auth.view import AuthView
-from apps.models import User
 from libs.database import db_session
 from main import create_app
 SERVICE_DB_URL =f'postgresql+psycopg2://ryeland:11111111@postgres:5432/service'
@@ -74,25 +72,8 @@ def runner(app):
 @fixture
 def session():
     engine = create_engine(
-        GATEWAY_DB_URL,
+        SERVICE_DB_URL,
         convert_unicode=True,
         max_overflow=100
     )
     db_session.configure(bind=engine)
-
-@fixture
-def create_user(session):
-    return db_session.query(User).filter(User.email=="test@test.com").one()
-
-@fixture
-def token(app, create_user):
-    with app.app_context():
-        auth_view = AuthView()
-
-        return auth_view.signin(create_user.email, "password")
-
-@fixture
-def teardown_user(session):
-    user = db_session.query(User).filter(User.email=="test@test.com").one()
-    db_session.delete(user)
-    db_session.commit()

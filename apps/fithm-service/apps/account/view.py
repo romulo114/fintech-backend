@@ -12,7 +12,6 @@ class AccountView:
 
     def get_accounts(self):
         '''Get all accounts owned by business'''
-
         business: Business = g.business
         accounts: List[Account] = business.accounts
         return {
