@@ -22,18 +22,15 @@ class BusinessView:
         '''Create a new business for the user'''
 
         # check existence
-        businesses = db_session.query(Business).filter(
-            Business.broker_name == body['broker_name'],
-            Business.business_number == body['business_number']
+        business = db_session.query(Business).filter(
+            Business.id == g.business_id
         ).all()
-        if len(businesses):
+        if len(business):
             abort(403, 'Business already exists')
 
         # create an business
         business = Business(
-            business_id=g.business.id,
-            broker_name=body['broker_name'],
-            business_number=body['business_number']
+            id=g.business_id,
         )
 
         db_session.add(business)

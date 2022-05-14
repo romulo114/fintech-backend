@@ -1,6 +1,6 @@
 from flask_restx import Namespace, Resource
 from flask import request
-from .view import Businessview
+from .view import BusinessView
 
 business = Namespace('business', path='/business')
 view = BusinessView()

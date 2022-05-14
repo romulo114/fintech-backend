@@ -19,6 +19,10 @@ def init_middlewares(app: Flask):
             business_id = request.json['business_id'] if 'business_id' in request.json else None
 
         business: Business = db_session.query(Business).filter(Business.id == business_id).first()
+        if not business:
+            if request.json["create_business"]:
+                g.business_id = business_id
+                return
         g.business = business
         if g.business:
             current_app.logger.debug(f'requesting business id: {g.business.id}')

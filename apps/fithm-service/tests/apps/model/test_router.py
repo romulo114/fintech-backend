@@ -3,7 +3,7 @@ import pytest
 
 def test_create_business(app):
     with app.test_client() as test_client:
-        response = test_client.post('/api/v1/business', query_string={"business_id": 2})
+        response = test_client.post('/api/v1/business', json={"business_id": 2, "create_business": True})
         assert response.status_code == 200
 
 
