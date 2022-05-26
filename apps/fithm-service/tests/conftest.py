@@ -6,36 +6,41 @@ import requests_mock
 from flask import Flask
 from pytest import fixture
 
-# from pytest_postgresql import factories
+from pytest_postgresql import factories
+from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy import create_engine
 
-from libs.database import db_session
 from main import create_app
-SERVICE_DB_URL =f'postgresql+psycopg2://ryeland:11111111@postgres:5432/service'
+
+postgresql_in_docker = factories.postgresql_noproc(
+    user="ryeland", host="postgres", dbname="test", password="11111111"
+)
+postgresql = factories.postgresql("postgresql_in_docker")
 
 
-# postgresql_in_docker = factories.postgresql_noproc(
-#     user="ryeland", host="postgres", dbname="test", password="11111111"
-# )
-# postgresql = factories.postgresql("postgresql_in_docker")
-#
-# @pytest.fixture
-# def engine(postgresql):
-#     connection = f"postgresql+psycopg2://{postgresql.info.user}:{postgresql.info.password}" \
-#                  f"@{postgresql.info.host}:{postgresql.info.port}/{postgresql.info.dbname}"
-#     return create_engine(connection, convert_unicode=True, max_overflow=100)
+@pytest.fixture
+def connection(postgresql):
+    return f"postgresql+psycopg2://{postgresql.info.user}:{postgresql.info.password}" \
+                 f"@{postgresql.info.host}:{postgresql.info.port}/{postgresql.info.dbname}"
 
-# @pytest.fixture
-# def db_session(engine):
-#     db_session = scoped_session(
-#         sessionmaker(autocommit=False, autoflush=False, bind=engine)
-#     )
-#
-#     from libs.database import init_db, create_tables, Base
-#
-#     Base.query = db_session.query_property()
-#     Base.metadata.create_all(bind=engine)
-#     create_tables(engine)
-#     yield db_session
+
+@pytest.fixture
+def engine(connection):
+    return create_engine(connection, convert_unicode=True, max_overflow=100)
+
+
+@pytest.fixture
+def db_session(engine):
+    db_session = scoped_session(
+        sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    )
+
+    from libs.database import init_db, create_tables, Base
+
+    Base.query = db_session.query_property()
+    Base.metadata.create_all(bind=engine)
+    create_tables(engine)
+    yield db_session
 
 
 # def init_db(app: Flask, db_session):
@@ -44,12 +49,11 @@ SERVICE_DB_URL =f'postgresql+psycopg2://ryeland:11111111@postgres:5432/service'
 #     @app.teardown_appcontext
 #     def shutdown_session(exception=None):
 #         db_session.remove()
-from sqlalchemy import create_engine
 
 
 @pytest.fixture
-def app():
-    app = create_app()
+def app(connection):
+    app = create_app(service_db_url=connection)
     app.config.update({
         "TESTING": True,
     })
@@ -69,11 +73,9 @@ def client(app):
 def runner(app):
     return app.test_cli_runner()
 
-@fixture
-def session():
-    engine = create_engine(
-        SERVICE_DB_URL,
-        convert_unicode=True,
-        max_overflow=100
-    )
-    db_session.configure(bind=engine)
+@pytest.fixture
+def business(db_session):
+    from apps.business.models import Business
+    business = Business(id=1)
+    db_session.add(business)
+    db_session.commit()

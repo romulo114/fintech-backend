@@ -47,7 +47,7 @@ COPY apps/fithm-service/requirements.txt .
 COPY apps/fithm-service/requirements_dev.txt .
 
 USER root
-COPY apps/fithm-gateway/start.sh /usr/bin/
+COPY apps/fithm-service/start.sh /usr/bin/
 RUN chmod +x /usr/bin/start.sh
 
 RUN pip install -r requirements.txt

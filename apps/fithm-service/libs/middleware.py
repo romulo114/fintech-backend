@@ -3,6 +3,8 @@ from flask import current_app, g, request
 from flask.app import Flask
 from libs.database import db_session
 from apps.models import Business
+from urllib3.exceptions import HTTPError
+
 
 def init_middlewares(app: Flask):
     '''Initialize app with middlewares'''
@@ -20,6 +22,8 @@ def init_middlewares(app: Flask):
 
         business: Business = db_session.query(Business).filter(Business.id == business_id).first()
         if not business:
+            if not getattr(request, "json"):
+                raise HTTPError()
             if request.json["create_business"]:
                 g.business_id = business_id
                 return

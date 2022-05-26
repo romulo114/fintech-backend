@@ -17,9 +17,9 @@ def forward_request(path: Optional[str] = None, body: Optional[Dict] = None, par
 
     if g.user and hasattr(g.user, 'id'):
         if method == 'PUT' or method == 'POST':
-            body['user_id'] = g.user.id
+            body['business_id'] = g.user.business.id
         elif method == 'GET' or method == 'DELETE':
-            params['user_id'] = g.user.id
+            params['business_id'] = g.user.business.id
 
     current_app.logger.debug(f'url = {url}, method = {method}, params = {params}, body = {body}')
     response = requests.request(method, url, params=params, json=body)

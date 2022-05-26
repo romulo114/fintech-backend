@@ -22,7 +22,7 @@ db_cli = AppGroup('db')
 @db_cli.command('create')
 def create_db():
     create_tables(engine)
-    populate_default(db_session)
+    populate_default(engine)
 
 
 @db_cli.command('drop')
