@@ -31,3 +31,12 @@ def test_portfolio_put(app, business, portfolio):
             json={"business_id": business.id, "name": "test_change"},
         )
         assert response.status_code == 200
+
+
+def test_portfolio_delete(app, business, portfolio):
+    with app.test_client() as test_client:
+        response = test_client.delete(
+            f"/api/v1/portfolios/{portfolio.id}",
+            query_string={"business_id": business.id},
+        )
+        assert response.status_code == 200

@@ -49,9 +49,9 @@ class TradeView:
     def update_trade(self, id: int, body: dict) -> dict:
         '''Update a trade'''
 
-        status = body['status']
-        name = body['name']
         trade = self.__get_trade(id)
+        status = body.get('status', trade.status)
+        name = body.get('name', trade.name)
         trade.name = name
         trade.status = status
         db_session.commit()
