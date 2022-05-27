@@ -1,10 +1,10 @@
-from flask import current_app
-from . import db_session
-from apps.models import (
-    Pending, Trade, Portfolio, ModelPosition, Price,
-    Model, Account
-)
-import pandas as pd
+# from flask import current_app
+# from . import db_session
+# from apps.models import (
+#     Pending, Trade, Portfolio, ModelPosition, Price,
+#     Model, Account
+# )
+# import pandas as pd
 
 # def update_trades_for_pendings(pendings: list[Pending], add: bool = True):
 #     '''Update trades for pendings'''

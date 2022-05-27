@@ -20,8 +20,10 @@ postgresql = factories.postgresql("postgresql_in_docker")
 
 @pytest.fixture
 def connection(postgresql):
-    return f"postgresql+psycopg2://{postgresql.info.user}:{postgresql.info.password}" \
-                 f"@{postgresql.info.host}:{postgresql.info.port}/{postgresql.info.dbname}"
+    return (
+        f"postgresql+psycopg2://{postgresql.info.user}:{postgresql.info.password}"
+        f"@{postgresql.info.host}:{postgresql.info.port}/{postgresql.info.dbname}"
+    )
 
 
 @pytest.fixture
@@ -56,9 +58,11 @@ def db_session(engine):
 @pytest.fixture
 def app(connection):
     app = create_app(service_db_url=connection)
-    app.config.update({
-        "TESTING": True,
-    })
+    app.config.update(
+        {
+            "TESTING": True,
+        }
+    )
 
     # other setup can go here
 
@@ -78,6 +82,7 @@ def runner(app):
 @pytest.fixture
 def business(db_session):
     from apps.business.models import Business
+
     business = Business()
     db_session.add(business)
     db_session.commit()
@@ -87,7 +92,10 @@ def business(db_session):
 @pytest.fixture
 def account(db_session, business):
     from apps.account.models import Account
-    account = Account(business_id=business.id, account_number="888", broker_name="test broker")
+
+    account = Account(
+        business_id=business.id, account_number="888", broker_name="test broker"
+    )
     db_session.add(account)
     db_session.commit()
     return account
@@ -96,7 +104,18 @@ def account(db_session, business):
 @pytest.fixture
 def model(db_session, business):
     from apps.model.models import Model
+
     model = Model(business_id=business.id)
     db_session.add(model)
     db_session.commit()
     return model
+
+
+@pytest.fixture
+def portfolio(db_session, business):
+    from apps.portfolio.models import Portfolio
+
+    portfolio = Portfolio(business_id=business.id)
+    db_session.add(portfolio)
+    db_session.commit()
+    return portfolio

@@ -19,5 +19,5 @@ api_v1.add_namespace(model)
 from .portfolio.router import portfolio
 api_v1.add_namespace(portfolio)
 
-from .trade.router import trade
-api_v1.add_namespace(trade)
+# from .trade.router import trade
+# api_v1.add_namespace(trade)
