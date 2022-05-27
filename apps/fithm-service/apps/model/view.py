@@ -1,7 +1,7 @@
 from flask import current_app, g, abort
 from libs.database import db_session
 from apps.models import Model, Business, ModelPosition
-from libs.database import helpers
+# from libs.database import helpers
 
 class ModelView:
     

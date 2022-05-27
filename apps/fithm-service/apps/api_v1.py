@@ -13,8 +13,8 @@ api_v1.add_namespace(admin)
 from .business.router import business
 api_v1.add_namespace(business)
 
-# from .model.router import model
-# api_v1.add_namespace(model)
+from .model.router import model
+api_v1.add_namespace(model)
 
 # from .portfolio.router import portfolio
 # api_v1.add_namespace(portfolio)

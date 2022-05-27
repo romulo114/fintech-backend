@@ -35,12 +35,14 @@ def db_session(engine):
         sessionmaker(autocommit=False, autoflush=False, bind=engine)
     )
 
-    from libs.database import init_db, create_tables, Base
+    from libs.database import create_tables, Base
 
     Base.query = db_session.query_property()
     Base.metadata.create_all(bind=engine)
     create_tables(engine)
     yield db_session
+    db_session.commit()
+    Base.metadata.drop_all(engine)
 
 
 # def init_db(app: Flask, db_session):
@@ -62,20 +64,39 @@ def app(connection):
 
     yield app
 
-    # clean up / reset resources here
 
-@pytest.fixture()
+@pytest.fixture
 def client(app):
     return app.test_client()
 
 
-@pytest.fixture()
+@pytest.fixture
 def runner(app):
     return app.test_cli_runner()
+
 
 @pytest.fixture
 def business(db_session):
     from apps.business.models import Business
-    business = Business(id=1)
+    business = Business()
     db_session.add(business)
     db_session.commit()
+    return business
+
+
+@pytest.fixture
+def account(db_session, business):
+    from apps.account.models import Account
+    account = Account(business_id=business.id, account_number="888", broker_name="test broker")
+    db_session.add(account)
+    db_session.commit()
+    return account
+
+
+@pytest.fixture
+def model(db_session, business):
+    from apps.model.models import Model
+    model = Model(business_id=business.id)
+    db_session.add(model)
+    db_session.commit()
+    return model

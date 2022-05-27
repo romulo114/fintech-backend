@@ -1,19 +1,5 @@
-import pytest
-
-
-def test_create_business(app):
+def test_model_position_collection_put(app, model, business):
     with app.test_client() as test_client:
-        response = test_client.post('/api/v1/business', json={"business_id": 2, "create_business": True})
+        response = test_client.put(f"/api/v1/models/{model.id}/position", json={"business_id": business.id, 'model_id': model.id, "positions":[]})
         assert response.status_code == 200
 
-
-def test_account_list(app, business):
-    with app.test_client() as test_client:
-        response = test_client.get('/api/v1/accounts', query_string={"business_id": 1})
-        assert response.status_code == 200
-
-
-def test_create_model(app, business):
-    with app.test_client() as test_client:
-        response = test_client.post("/api/v1/accounts", json={'broker_name': 'test_broker', 'account_number': 'test_number', 'business_id': 1})
-        assert response.status_code == 200
