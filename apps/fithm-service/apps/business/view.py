@@ -42,8 +42,8 @@ class BusinessView:
         '''Get business detail'''
 
         business = self.__get_business(id)
-        if not business.active:
-            abort(401, 'Not active business')
+        # if not business.active:
+        #     abort(401, 'Not active business')
 
         return business.as_dict()
 
@@ -75,7 +75,7 @@ class BusinessView:
         business = db_session.query(Business).get(id)
         if not business:
             abort(404, 'Business not found')
-        if business.business_id != g.business.id:
+        if business.id != g.business.id:
             abort(403, "You don't have permission to this business.")
 
         return business

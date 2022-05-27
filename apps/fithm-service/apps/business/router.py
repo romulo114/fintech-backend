@@ -29,14 +29,12 @@ class Business(Resource):
     @business.doc('get business info')
     def get(self, business_id: str):
 
-        return view.get_account(business_id)
-
+        return view.get_business(business_id)
 
     @business.doc('update business info')
     def put(self, business_id: str):
 
         return view.update_business(business_id, request.json)
-
 
     @business.doc('delete business')
     def delete(self, business_id: str):

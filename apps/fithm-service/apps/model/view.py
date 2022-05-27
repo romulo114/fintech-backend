@@ -13,8 +13,8 @@ class ModelView:
         '''Get all models for the business'''
 
         business: Business = g.business
-        public = args['public'] == 'true'
-        current_app.logger.debug(args['public'])
+        public = args.get('public', 'false') == 'true'
+        current_app.logger.debug(f"public arg was {args.get('public', 'not set so it is false')}")
         models: list[Model] = (
             self.public_models() if public
             else filter(lambda model: not model.is_public, business.models)
@@ -23,23 +23,21 @@ class ModelView:
             'models': [model.as_dict() for model in models if model.active]
         }
 
-
     def create_model(self, body: dict) -> dict:
         '''Create a new model for the business'''
 
-        public = body['public']
+        public = body.get('public', False)
         model = Model(
             business_id=g.business.id,
             name=body['name'],
-            description=body['description'],
-            keywords=body['keywords'],
+            description=body.get('description'),
+            keywords=body.get('keywords'),
             is_public=public
         )
         db_session.add(model)
         db_session.commit()
 
         return model.as_dict()
-
 
     def get_model(self, id: int) -> dict:
         '''Get a specific model with id'''
@@ -50,15 +48,14 @@ class ModelView:
 
         return model.as_dict()
 
-
     def update_model(self, id: int, body: dict) -> dict:
         '''Update a model with body'''
 
         model = self.__get_model(id)
-        model.name = body['name']
-        model.keywords = body['keywords']
-        model.is_public = body['public']
-        model.description = body['description']
+        model.name = body.get('name', model.name)
+        model.keywords = body.get('keywords', model.keywords)
+        model.is_public = body.get('public', model.is_public)
+        model.description = body.get('description', model.description)
 
         db_session.commit()
 
