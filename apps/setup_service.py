@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-test_requirements = ["pytest", "testing.postgres"]
+test_requirements = ["pytest"]
 setup(
     name="fithm-service",
     version="1.1.0",

@@ -121,12 +121,3 @@ def portfolio(db_session, business):
     db_session.commit()
     return portfolio
 
-
-@pytest.fixture
-def trade(db_session, business):
-    from apps.trade.models import Trade
-
-    trade = Trade(business_id=business.id, name="test_trade", created=datetime.datetime.utcnow(), status=False)
-    db_session.add(trade)
-    db_session.commit()
-    return trade
