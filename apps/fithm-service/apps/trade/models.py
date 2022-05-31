@@ -48,3 +48,16 @@ class TradeRequest(Base):
     model_weight = Column(Float, nullable=False)
     price = Column(Float, nullable=False)
     restrictions = Column(String, nullable=False)
+
+
+class TradePortfolio(Base):
+    __tablename__ = 'trade_portfolios'
+    id = Column(Integer, primary_key=True)
+    trade_id = Column(Integer, ForeignKey('trades.id'))
+    portfolio_id = Column(Integer, ForeignKey('portfolios.id'), nullable=False)
+    trade = relationship("Trade", back_populates="portfolios")
+    portfolio = relationship("Portfolio", back_populates="trades")
+
+    def as_dict(self):
+        result = {'id': self.id, 'trade_id': self.trade_id, 'portfolio_id': self.portfolio_id}
+        return result

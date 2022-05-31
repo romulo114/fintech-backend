@@ -17,19 +17,6 @@ from apps.portfolio.models import Portfolio
 from apps.trade.models import Trade, TradeRequest
 from apps.business.models import Business
 
-class TradePortfolio(Base):
-    __tablename__ = 'trade_portfolios'
-    id = Column(Integer, primary_key=True)
-    trade_id = Column(Integer, ForeignKey('trades.id'))
-    portfolio_id = Column(Integer, ForeignKey('portfolios.id'), nullable=False)
-    trade = relationship("Trade", back_populates="portfolios")
-    portfolio = relationship("Portfolio", back_populates="trades")
-
-    def as_dict(self):
-        result = {'id': self.id, 'trade_id': self.trade_id, 'portfolio_id': self.portfolio_id}
-        return result
-
-
 class Price(Base):
     __tablename__ = 'prices'
     id = Column(Integer, primary_key=True)

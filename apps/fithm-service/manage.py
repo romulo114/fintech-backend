@@ -4,7 +4,7 @@ from flask import Flask
 from flask.cli import AppGroup
 from sqlalchemy import create_engine
 
-from libs.database import create_tables, drop_tables, populate_default, db_session
+from libs.database import create_tables, drop_tables, populate_default, db_session, remove_default
 from settings import SERVICE_DB_URL
 
 engine = create_engine(
@@ -23,6 +23,16 @@ db_cli = AppGroup('db')
 def create_db():
     create_tables(engine)
     populate_default(engine)
+
+
+@db_cli.command('populate')
+def populate_db():
+    populate_default(engine)
+
+
+@db_cli.command('clear')
+def clear_db():
+    remove_default(engine)
 
 
 @db_cli.command('drop')

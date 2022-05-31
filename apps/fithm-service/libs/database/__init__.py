@@ -38,7 +38,12 @@ def populate_default(engine):
     default_values(db_session)
 
 
+def remove_default(engine):
+    from .defaults import clear_db_data
+    db_session.configure(bind=engine)
+    clear_db_data(db_session)
+
+
 def drop_tables(engine):
     import apps.models
     Base.metadata.drop_all(engine)
-

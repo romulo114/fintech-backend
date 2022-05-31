@@ -1,4 +1,4 @@
-import datetime
+import datetime as dt
 import os
 import pytest
 import requests
@@ -91,21 +91,8 @@ def business(db_session):
 
 
 @pytest.fixture
-def account(db_session, business):
-    from apps.account.models import Account
-
-    account = Account(
-        business_id=business.id, account_number="888", broker_name="test broker"
-    )
-    db_session.add(account)
-    db_session.commit()
-    return account
-
-
-@pytest.fixture
 def model(db_session, business):
     from apps.model.models import Model
-
     model = Model(business_id=business.id)
     db_session.add(model)
     db_session.commit()
@@ -113,11 +100,45 @@ def model(db_session, business):
 
 
 @pytest.fixture
-def portfolio(db_session, business):
+def portfolio(db_session, business, model):
     from apps.portfolio.models import Portfolio
-
-    portfolio = Portfolio(business_id=business.id)
+    portfolio = Portfolio(business_id=business.id, model_id=model.id)
     db_session.add(portfolio)
     db_session.commit()
     return portfolio
 
+
+@pytest.fixture
+def account(db_session, business, portfolio):
+    from apps.account.models import Account
+
+    account = Account(
+        business_id=business.id,
+        account_number="888",
+        broker_name="test broker",
+        portfolio_id=portfolio.id,
+    )
+    db_session.add(account)
+    db_session.commit()
+    return account
+
+
+@pytest.fixture
+def trade(db_session, business, portfolio):
+    from apps.trade.models import Trade, TradePortfolio
+    trade = Trade(
+        active=True,
+        name="test_trade",
+        business_id=business.id,
+        created=dt.datetime.now(),
+        status=True
+    )
+    db_session.add(trade)
+    db_session.commit()
+    trade_portfolio = TradePortfolio(
+        portfolio_id=portfolio.id,
+        trade_id=trade.id,
+        active=True,
+    )
+    db_session.add(trade_portfolio)
+    db_session.commit()
