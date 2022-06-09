@@ -131,7 +131,7 @@ def trade(db_session, business, portfolio):
         name="test_trade",
         business_id=business.id,
         created=dt.datetime.now(),
-        status=True
+        status='active',
     )
     db_session.add(trade)
     db_session.commit()

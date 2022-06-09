@@ -14,7 +14,7 @@ from libs.database import Base
 from apps.account.models import Account, AccountPosition
 from apps.model.models import Model, ModelPosition
 from apps.portfolio.models import Portfolio
-from apps.trade.models import Trade, TradeRequest
+from apps.trade.models import TradeRequest, TradePortfolio
 from apps.business.models import Business
 
 class Price(Base):

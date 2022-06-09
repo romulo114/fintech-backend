@@ -31,6 +31,11 @@ def create_tables(engine):
     import apps.models
     Base.metadata.create_all(bind=engine)
 
+def create_tables_alembic(engine):
+    return Base.metadata.create_all(bind=engine)
+
+
+
 
 def populate_default(engine):
     from .defaults import default_values

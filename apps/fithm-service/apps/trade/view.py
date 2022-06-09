@@ -5,7 +5,10 @@ from libs.database.trade import (
     get_trade_prices,
     update_trade_prices, get_requests
 )
-from apps.models import Trade, Business, Portfolio, AccountPosition, TradePortfolio
+from ..account.models import AccountPosition
+from ..business.models import Business
+from ..portfolio.models import Portfolio
+from .models import Trade, TradePortfolio
 
 
 class TradeView:
