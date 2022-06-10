@@ -53,10 +53,9 @@ class TradeRequest(Base):
 
 class TradePortfolio(Base):
     __tablename__ = 'trade_portfolios'
-    # __table_args__ = (
-    #     UniqueConstraint("portfolio_id", "active", name="active_portfolio"),
-    #     {"autoload": True},
-    # )
+    __table_args__ = (
+        UniqueConstraint("portfolio_id", "active", name="active_portfolio"),
+    )
     id = Column(Integer, primary_key=True)
     trade_id = Column(Integer, ForeignKey('trades.id'))
     portfolio_id = Column(Integer, ForeignKey('portfolios.id'), nullable=False)
@@ -67,3 +66,21 @@ class TradePortfolio(Base):
     def as_dict(self):
         result = {'id': self.id, 'trade_id': self.trade_id, 'portfolio_id': self.portfolio_id}
         return result
+
+
+class Price(Base):
+    __tablename__ = 'prices'
+    id = Column(Integer, primary_key=True)
+    account_position_id = Column(Integer, ForeignKey('account_positions.id'))
+    model_position_id = Column(Integer, ForeignKey('model_positions.id'))
+    trade_id = Column(Integer, ForeignKey('trades.id'))
+    symbol = Column(String, nullable=False)
+    price = Column(Float)
+    trade = relationship("Trade", back_populates="prices")
+    model_position = relationship(
+        "ModelPosition", back_populates="trade_prices")
+    account_position = relationship(
+        "AccountPosition", back_populates="trade_prices")
+
+    def as_dict(self):
+        return {'id': self.id, 'trade_id': self.trade_id, 'symbol': self.symbol, 'price': str(self.price)}

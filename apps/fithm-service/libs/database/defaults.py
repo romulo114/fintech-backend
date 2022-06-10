@@ -24,7 +24,7 @@ def default_values(db_session):
     with open("scripts/fixtures/models.csv", "r") as file:
         reader = csv.DictReader(file)
         for row in reader:
-            models = db_session.query(Model).filter(Business.id == row["business_id"]).all()
+            models = db_session.query(Model).filter(Model.business_id == row["business_id"]).all()
             if not models:
                 row["active"] = True if row["active"] == "true" else False
                 row["is_public"] = True if row["is_public"] == "true" else False
@@ -33,7 +33,7 @@ def default_values(db_session):
     with open("scripts/fixtures/portfolios.csv", "r") as file:
         reader = csv.DictReader(file)
         for row in reader:
-            portfolios = db_session.query(Portfolio).filter(Business.id == row["business_id"]).all()
+            portfolios = db_session.query(Portfolio).filter(Portfolio.business_id == row["business_id"]).all()
             if not portfolios:
                 row["active"] = True if row["active"] == "true" else False
                 db_session.add(Portfolio(**row))
@@ -41,18 +41,16 @@ def default_values(db_session):
     with open("scripts/fixtures/accounts.csv", "r") as file:
         reader = csv.DictReader(file)
         for row in reader:
-            accounts = db_session.query(Account).filter(Business.id == row["business_id"]).all()
+            accounts = db_session.query(Account).filter(Account.business_id == row["business_id"]).all()
             if not accounts:
-                row["active"] = True if row["active"] == "true" else False
                 db_session.add(Account(**row))
     db_session.commit()
     with open("scripts/fixtures/trades.csv", "r") as file:
         reader = csv.DictReader(file)
         for row in reader:
-            trades = db_session.query(Trade).filter(Business.id == row["business_id"]).all()
+            trades = db_session.query(Trade).filter(Trade.business_id == row["business_id"]).all()
             if not trades:
-                row["active"] = True if row["active"] == "true" else False
-                row["status"] = True if row["active"] == "true" else False
+                row["status"] = "active"
                 row["created"] = dt.datetime.now()
                 db_session.add(Trade(**row))
     db_session.commit()
