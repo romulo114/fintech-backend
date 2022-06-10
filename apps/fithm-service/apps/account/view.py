@@ -2,7 +2,7 @@ from typing import List
 from flask import current_app, g, abort
 from libs.database import db_session
 from .models import Account
-from apps.models import Business
+from ..business.models import Business
 
 class AccountView:
 
@@ -11,17 +11,16 @@ class AccountView:
 
 
     def get_accounts(self):
-        '''Get all accounts owned by user'''
-
+        '''Get all accounts owned by business'''
         business: Business = g.business
         accounts: List[Account] = business.accounts
         return {
-            'accounts': [account.as_dict() for account in accounts]
+            'accounts': [account.as_dict() for account in accounts if account.active]
         }
 
 
     def create_account(self, body: dict) -> dict:
-        '''Create a new account for the user'''
+        '''Create a new account for the business'''
 
         # check existence
         accounts = db_session.query(Account).filter(
@@ -50,6 +49,22 @@ class AccountView:
         '''Get account detail'''
 
         account = self.__get_account(id)
+        if not account.active:
+            abort(401, 'Not active account')
+
+        return account.as_dict()
+
+
+    def update_account(self, id: int, body: dict) -> dict:
+        '''Update an existing account'''
+
+        account = self.__get_account(id)
+        if 'account_number' in body:
+            account.account_number = body['account_number']
+        if 'broker_name' in body:
+            account.broker_name = body['broker_name']
+
+        db_session.commit()
         return account.as_dict()
 
 
@@ -60,12 +75,10 @@ class AccountView:
         db_session.delete(account)
         db_session.commit()
 
-        return {
-            'result': 'success'
-        }
+        return { 'result': 'success' }
 
 
-    def __get_account(id: int) -> Account:
+    def __get_account(self, id: int) -> Account:
 
         account = db_session.query(Account).get(id)
         if not account:

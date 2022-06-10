@@ -22,6 +22,7 @@ def register_all():
     register_trade_entries()
     register_admin_entries()
     register_helpers()
+    return None
 
 
 def register_auth_entries():

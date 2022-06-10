@@ -14,7 +14,6 @@ class PortfolioList(Resource):
 
         return view.get_portfolios()
 
-
     @portfolio.doc('create a portfolio')
     def post(self):
         

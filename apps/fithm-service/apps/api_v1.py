@@ -10,6 +10,9 @@ api_v1.add_namespace(account)
 from .admin.router import admin
 api_v1.add_namespace(admin)
 
+from .business.router import business
+api_v1.add_namespace(business)
+
 from .model.router import model
 api_v1.add_namespace(model)
 

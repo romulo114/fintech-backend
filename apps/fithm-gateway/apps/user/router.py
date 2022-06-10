@@ -6,21 +6,22 @@ from libs.depends.entry import container
 from libs.middleware.auth import login_required, active_required
 
 
-user = Namespace('user', path='/users', decorators=[active_required(), login_required()])
+user = Namespace(
+    "user", path="/users", decorators=[active_required(), login_required()]
+)
 view = UserView()
 
 
-@user.route('')
+@user.route("")
 class UserResource(Resource):
-    '''User update, delete'''
+    """User update, delete"""
 
-    @user.doc('get user')
+    @user.doc("get user")
     def get(self):
 
         return view.get()
 
-
-    @user.doc('update user')
+    @user.doc("update user")
     def put(self):
 
         parser: UserParser = container.get(UserParser)
@@ -28,8 +29,7 @@ class UserResource(Resource):
 
         return view.update(param)
 
-
-    @user.doc('delete user')
+    @user.doc("delete user")
     def delete(self):
 
         return view.delete()

@@ -7,15 +7,15 @@ from libs.depends.entry import container
 from libs.middleware.auth import login_required
 
 
-auth = Namespace('auth', path='/auth')
+auth = Namespace("auth", path="/auth")
 view = AuthView()
 
 
-@auth.route('/signup')
+@auth.route("/signup")
 class Signup(Resource):
-    '''User signup'''
+    """User signup"""
 
-    @auth.doc('sign-up new user')
+    @auth.doc("sign-up new user")
     def post(self):
 
         parser: AuthParser = container.get(AuthParser)
@@ -27,9 +27,9 @@ class Signup(Resource):
         return view.signup(param)
 
 
-@auth.route('/signin')
+@auth.route("/signin")
 class Signin(Resource):
-    '''Sign in'''
+    """Sign in"""
 
     def post(self):
         parser: AuthParser = container.get(AuthParser)
@@ -38,34 +38,34 @@ class Signin(Resource):
         validator: AuthValidator = container.get(AuthValidator)
         validator.validate_signin(param)
 
-        return view.signin(param['email'], param['password'])
+        return view.signin(param["email"], param["password"])
 
 
-@auth.route('/signout')
+@auth.route("/signout")
 class Signout(Resource):
-    '''Sign out'''
+    """Sign out"""
 
     @login_required()
     def post(self):
-        
+
         return view.signout()
 
 
-@auth.route('/confirm-email')
+@auth.route("/confirm-email")
 class ConfirmEmail(Resource):
-    '''Confirm mail'''
+    """Confirm mail"""
 
     def post(self):
 
         parser: AuthParser = container.get(AuthParser)
         param = parser.parse_email_confirm(request)
 
-        return view.confirm(param['confirm_token'])
+        return view.confirm(param["confirm_token"])
 
 
-@auth.route('/send-confirm')
+@auth.route("/send-confirm")
 class SendConfirm(Resource):
-    '''Send confirmation email'''
+    """Send confirmation email"""
 
     @login_required()
     def get(self):
@@ -73,22 +73,30 @@ class SendConfirm(Resource):
         return view.send_confirm()
 
 
-@auth.route('/forgot-password')
+@auth.route("/forgot-password")
 class ForgotPassword(Resource):
-    '''Send reset password link'''
+    """Send reset password link"""
 
     def post(self):
         parser: AuthParser = container.get(AuthParser)
         param = parser.parse_forgot_password(request)
 
-        return view.forgot_password(param['email'])
+        return view.forgot_password(param["email"])
 
 
-@auth.route('/reset-password')
+@auth.route("/reset-password")
 class ResetPassword(Resource):
-
     def post(self):
         parser: AuthParser = container.get(AuthParser)
         param = parser.parse_reset_password(request)
 
-        return view.reset_password(param['reset_token'], param['password'])
+        return view.reset_password(param["reset_token"], param["password"])
+
+
+@auth.route("/refresh")
+class RefreshToken(Resource):
+    def get(self):
+        parser: AuthParser = container.get(AuthParser)
+        param = parser.parse_refresh(request)
+
+        return view.refresh(param["token"])

@@ -1,8 +1,8 @@
 FROM python:3 as base
 
-ARG ENVIRONMENT=prod
+ARG ENVIRONMENT=dev
 
-ENV UNAME=andrii
+ENV UNAME=rye
 ARG UID=1000
 ARG GID=1000
 RUN groupadd -g $GID -o $UNAME
@@ -32,7 +32,7 @@ RUN chmod +x /usr/bin/start.sh
 
 USER $UNAME
 RUN pip install -r requirements.txt
-RUN if [ "x$ENVIRONMENT" = "xprod" ] ; \
+RUN if [ "$ENVIRONMENT" = "prod" ] ; \
     then echo "Production build, no dev dependencies" && pip install -r requirements.txt ; \
     else echo "Dev build" && pip install -r requirements_dev.txt ; \
     fi
@@ -46,8 +46,12 @@ WORKDIR $WORKDIR
 COPY apps/fithm-service/requirements.txt .
 COPY apps/fithm-service/requirements_dev.txt .
 
+USER root
+COPY apps/fithm-service/start.sh /usr/bin/
+RUN chmod +x /usr/bin/start.sh
+
 RUN pip install -r requirements.txt
-RUN if [ "x$ENVIRONMENT" = "xprod" ] ; \
+RUN if [ "$ENVIRONMENT" = "prod" ] ; \
     then echo "Production build, no dev dependencies" && pip install -r requirements.txt ; \
     else echo "Dev build" && pip install -r requirements_dev.txt ; \
     fi

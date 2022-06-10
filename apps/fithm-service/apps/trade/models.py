@@ -5,37 +5,33 @@ from sqlalchemy import (
     Float,
     Boolean,
     Integer,
-    DateTime
+    DateTime, UniqueConstraint
 )
+from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import relationship
-from libs.database import Base
+from libs.database import Base, Stateful
 
 
 class Trade(Base):
     __tablename__ = 'trades'
     id = Column(Integer, primary_key=True)
-    business_id = Column(Integer, ForeignKey('businesses.id'), nullable=False)
+    name = Column(String, nullable=False)
+    business_id = Column(Integer, ForeignKey('business.id'), nullable=False)
     created = Column(DateTime, nullable=False)
-    status = Column(Boolean, nullable=False)
+    status = Column('status', ENUM('active', 'inactive', 'retired', name='trade_status'), nullable=False)
     business = relationship("Business", back_populates="trades")
-    pendings = relationship("Pending", back_populates="trade",
+    portfolios = relationship("TradePortfolio", back_populates="trade",
                             cascade="all, delete, delete-orphan")
     prices = relationship("Price", back_populates="trade",
                           cascade="all, delete, delete-orphan")
 
     def as_dict(self):
-        result = {'id': self.id, 'user_id': self.business.user_id, 'created': str(self.created), 'status': str(self.status),
-                  'pendings': [], 'prices': []}
-        if self.pendings:
-            pendings = []
-            for p in self.pendings:
-                pendings.append(p.as_dict())
-            result['pendings'] = pendings
+        result = {'id': self.id, 'name': self.name, 'created': str(self.created), 'status': str(self.status),
+                  'portfolios': [], 'prices': []}
+        if self.portfolios:
+            result['portfolios'] = [p.as_dict() for p in self.portfolios]
         if self.prices:
-            prices = []
-            for pr in self.prices:
-                prices.append(pr.as_dict())
-            result['prices'] = prices
+            result['prices'] = [p.as_dict() for p in self.prices]
         return result
 
 
@@ -53,3 +49,38 @@ class TradeRequest(Base):
     model_weight = Column(Float, nullable=False)
     price = Column(Float, nullable=False)
     restrictions = Column(String, nullable=False)
+
+
+class TradePortfolio(Base):
+    __tablename__ = 'trade_portfolios'
+    __table_args__ = (
+        UniqueConstraint("portfolio_id", "active", name="active_portfolio"),
+    )
+    id = Column(Integer, primary_key=True)
+    trade_id = Column(Integer, ForeignKey('trades.id'))
+    portfolio_id = Column(Integer, ForeignKey('portfolios.id'), nullable=False)
+    active = Column(Boolean, nullable=False)
+    trade = relationship("Trade", back_populates="portfolios")
+    portfolio = relationship("Portfolio", back_populates="trades")
+
+    def as_dict(self):
+        result = {'id': self.id, 'trade_id': self.trade_id, 'portfolio_id': self.portfolio_id}
+        return result
+
+
+class Price(Base):
+    __tablename__ = 'prices'
+    id = Column(Integer, primary_key=True)
+    account_position_id = Column(Integer, ForeignKey('account_positions.id'))
+    model_position_id = Column(Integer, ForeignKey('model_positions.id'))
+    trade_id = Column(Integer, ForeignKey('trades.id'))
+    symbol = Column(String, nullable=False)
+    price = Column(Float)
+    trade = relationship("Trade", back_populates="prices")
+    model_position = relationship(
+        "ModelPosition", back_populates="trade_prices")
+    account_position = relationship(
+        "AccountPosition", back_populates="trade_prices")
+
+    def as_dict(self):
+        return {'id': self.id, 'trade_id': self.trade_id, 'symbol': self.symbol, 'price': str(self.price)}

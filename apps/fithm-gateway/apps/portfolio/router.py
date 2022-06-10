@@ -5,37 +5,36 @@ from libs.middleware.auth import login_required, active_required
 from libs.depends.entry import container
 from .lib.parser import PortfolioParser
 
-portfolio = Namespace('portfolio', path='/portfolios', decorators=[active_required(), login_required()])
+portfolio = Namespace(
+    "portfolio", path="/portfolios", decorators=[active_required(), login_required()]
+)
 
-@portfolio.route('')
+
+@portfolio.route("")
 class PortfolioList(Resource):
-
-    @portfolio.doc('get all portfolios')
+    @portfolio.doc("get all portfolios")
     def get(self):
-        '''List all portfolios'''
+        """List all portfolios"""
 
         return forward_request()
 
-
-    @portfolio.doc('create a portfolio')
+    @portfolio.doc("create a portfolio")
     def post(self):
-        
+
         parser: PortfolioParser = container.get(PortfolioParser)
         body = parser.parse_create(request)
 
         return forward_request(body=body)
 
 
-@portfolio.route('/<int:port_id>')
+@portfolio.route("/<int:port_id>")
 class Portfolio(Resource):
-
-    @portfolio.doc('get a portfolio')
+    @portfolio.doc("get a portfolio")
     def get(self, port_id: int):
 
         return forward_request()
 
-
-    @portfolio.doc('update a portfolio')
+    @portfolio.doc("update a portfolio")
     def put(self, port_id: int):
 
         parser: PortfolioParser = container.get(PortfolioParser)
@@ -43,17 +42,15 @@ class Portfolio(Resource):
 
         return forward_request(body=body)
 
-
-    @portfolio.doc('delete a portfolio')
+    @portfolio.doc("delete a portfolio")
     def delete(self, port_id: int):
 
         return forward_request()
 
 
-@portfolio.route('/<int:port_id>/accounts')
+@portfolio.route("/<int:port_id>/accounts")
 class PortfolioAccounts(Resource):
-
-    @portfolio.doc('update the portfolio accounts')
+    @portfolio.doc("update the portfolio accounts")
     def put(self, port_id: int):
 
         parser: PortfolioParser = container.get(PortfolioParser)
@@ -62,10 +59,9 @@ class PortfolioAccounts(Resource):
         return forward_request(body=body)
 
 
-@portfolio.route('/<int:port_id>/model')
+@portfolio.route("/<int:port_id>/model")
 class PortfolioModel(Resource):
-
-    @portfolio.doc('update the portfolio model')
+    @portfolio.doc("update the portfolio model")
     def put(self, port_id: int):
 
         parser: PortfolioParser = container.get(PortfolioParser)

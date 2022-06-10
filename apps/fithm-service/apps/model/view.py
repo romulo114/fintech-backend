@@ -1,8 +1,7 @@
 from flask import current_app, g, abort
 from libs.database import db_session
-from apps.models import Model, Business, ModelPosition, Pending
-import pandas
-from libs.database import helpers
+from apps.models import Model, Business, ModelPosition
+# from libs.database import helpers
 
 class ModelView:
     
@@ -10,45 +9,53 @@ class ModelView:
         pass
 
 
-    def get_models(self) -> list:
-        '''Get all models for the user'''
+    def get_models(self, args: dict) -> list:
+        '''Get all models for the business'''
 
         business: Business = g.business
-        models: list[Model] = business.models
+        public = args.get('public', 'false') == 'true'
+        current_app.logger.debug(f"public arg was {args.get('public', 'not set so it is false')}")
+        models: list[Model] = (
+            self.public_models() if public
+            else filter(lambda model: not model.is_public, business.models)
+        )
         return {
-            'models': [model.as_dict() for model in models]
+            'models': [model.as_dict() for model in models if model.active]
         }
 
-
     def create_model(self, body: dict) -> dict:
-        '''Create a new model for the user'''
+        '''Create a new model for the business'''
 
+        public = body.get('public', False)
         model = Model(
             business_id=g.business.id,
             name=body['name'],
-            keywords=body['keywords'],
-            is_public=body['public']
+            description=body.get('description'),
+            keywords=body.get('keywords'),
+            is_public=public
         )
         db_session.add(model)
         db_session.commit()
 
         return model.as_dict()
 
-
     def get_model(self, id: int) -> dict:
         '''Get a specific model with id'''
 
         model = self.__get_model(id)
-        return model.as_dict()
+        if not model.active:
+            abort(401, 'Not active model')
 
+        return model.as_dict()
 
     def update_model(self, id: int, body: dict) -> dict:
         '''Update a model with body'''
 
         model = self.__get_model(id)
-        model.name = body['name']
-        model.keywords = body['keywords']
-        model.is_public = body['public']
+        model.name = body.get('name', model.name)
+        model.keywords = body.get('keywords', model.keywords)
+        model.is_public = body.get('public', model.is_public)
+        model.description = body.get('description', model.description)
 
         db_session.commit()
 
@@ -59,14 +66,11 @@ class ModelView:
         '''Delete a model'''
 
         model = self.__get_model(id)
-        pendings = model.pendings
         db_session.delete(model)
         db_session.commit()
-        helpers.update_trade_for_portfolio_model(pendings)
+        # helpers.update_trades_for_pendings(pendings)
 
-        return {
-            'result': 'success'
-        }
+        return { 'result': 'success' }
 
 
     def update_model_position(self, id: int, body: dict) -> dict:
@@ -83,15 +87,15 @@ class ModelView:
         model.allocation = positions
         db_session.commit()
 
-        pendings: list[Pending] = model.pendings
-        helpers.update_trade_for_portfolio_model(pendings)
+        # pendings: list[Pending] = model.pendings
+        # helpers.update_trades_for_pendings(pendings)
 
         return model.as_dict()
 
 
     def public_models(self) -> list[Model]:
 
-        return db_session.query(Model).filter(Model.is_public).all()
+        return db_session.query(Model).filter(Model.is_public == True).all()
 
 
     def __get_model(self, id: int) -> Model:

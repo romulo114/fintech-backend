@@ -17,7 +17,7 @@ class Accounts(Resource):
 
     @account.doc('create account')
     def post(self):
-        '''Create an account for a user'''
+        '''Create an account for a business'''
 
         return view.create_account(request.json)
 
@@ -29,6 +29,12 @@ class Account(Resource):
     def get(self, account_id: str):
 
         return view.get_account(account_id)
+
+
+    @account.doc('update account info')
+    def put(self, account_id: str):
+
+        return view.update_account(account_id, request.json)
 
 
     @account.doc('delete account')
