@@ -3,7 +3,7 @@ from sqlalchemy import (
     String,
     ForeignKey,
     Integer,
-    Float, UniqueConstraint
+    Float, UniqueConstraint, Boolean
 )
 from sqlalchemy.orm import relationship
 from libs.database import Base, Stateful
@@ -16,7 +16,6 @@ class Account(Stateful):
     account_number = Column(String, nullable=False)
     broker_name = Column(String, nullable=False)
     portfolio_id = Column(Integer, ForeignKey('portfolios.id'), nullable=True)
-    cash_position_price_id = Column(Integer, ForeignKey('account_position_price.id'), nullable=True, name="cash_position_price")
     business = relationship("Business", back_populates="accounts")
     portfolio = relationship("Portfolio", back_populates="accounts")
     account_positions = relationship(
@@ -41,6 +40,7 @@ class AccountPosition(Base):
     broker_name = Column(String, nullable=False)
     symbol = Column(String, nullable=False)
     shares = Column(Float, nullable=False)
+    is_cash = Column(Boolean, nullable=True)
     account = relationship("Account", back_populates="account_positions")
     portfolio = relationship("Portfolio", back_populates="account_positions")
 
