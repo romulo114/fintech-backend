@@ -45,7 +45,7 @@ class Model(Stateful):
 class ModelPosition(Base):
     __tablename__ = 'model_positions'
     __table_args__ = (
-        UniqueConstraint("model_id", "symbol"),
+        UniqueConstraint("model_id", "symbol", name="model_positions_model_id_symbol_key"),
     )
     id = Column(Integer, primary_key=True)
     model_id = Column(Integer, ForeignKey('models.id'), nullable=False)
@@ -58,3 +58,10 @@ class ModelPosition(Base):
         result = {'model_id': self.model_id,
                   'symbol': self.symbol, 'weight': self.weight}
         return result
+
+
+class ModelPositionPrice(Base):
+    __tablename__ = 'model_position_price'
+    id = Column(Integer, primary_key=True)
+    model_position_id = Column(Integer, ForeignKey('model_positions.id'), nullable=False)
+    business_price_id = Column(Integer, ForeignKey('business_price.id'), nullable=False)

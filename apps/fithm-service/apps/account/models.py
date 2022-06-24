@@ -16,6 +16,7 @@ class Account(Stateful):
     account_number = Column(String, nullable=False)
     broker_name = Column(String, nullable=False)
     portfolio_id = Column(Integer, ForeignKey('portfolios.id'), nullable=True)
+    cash_position_price_id = Column(Integer, ForeignKey('account_position_price.id'), nullable=True, name="cash_position_price")
     business = relationship("Business", back_populates="accounts")
     portfolio = relationship("Portfolio", back_populates="accounts")
     account_positions = relationship(
@@ -31,7 +32,7 @@ class Account(Stateful):
 class AccountPosition(Base):
     __tablename__ = 'account_positions'
     __table_args__ = (
-        UniqueConstraint("account_id", "symbol"),
+        UniqueConstraint("account_id", "symbol", name="account_positions_account_id_symbol_key"),
     )
     id = Column(Integer, primary_key=True)
     portfolio_id = Column(Integer, ForeignKey('portfolios.id'), nullable=False)
@@ -48,3 +49,10 @@ class AccountPosition(Base):
             {'id': self.id, 'portfolio_id': self.portfolio_id, 'account_id': self.account_id,
              'broker_name': self.broker_name, 'account_number': self.account_number,
              'symbol': self.symbol, 'shares': str(self.shares)})
+
+
+class AccountPositionPrice(Base):
+    __tablename__ = 'account_position_price'
+    id = Column(Integer, primary_key=True)
+    account_position_id = Column(Integer, ForeignKey('account_positions.id'), nullable=False)
+    business_price_id = Column(Integer, ForeignKey('business_price.id'), nullable=False)
