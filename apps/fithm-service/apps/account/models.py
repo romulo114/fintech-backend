@@ -39,8 +39,6 @@ class AccountPosition(Base):
     shares = Column(Float, nullable=False)
     account = relationship("Account", back_populates="account_positions")
     portfolio = relationship("Portfolio", back_populates="account_positions")
-    trade_prices = relationship(
-        "Price", back_populates="account_position", cascade="all, delete, delete-orphan")
 
     def as_dict(self):
         return (

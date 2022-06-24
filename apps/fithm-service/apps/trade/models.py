@@ -22,8 +22,6 @@ class Trade(Base):
     business = relationship("Business", back_populates="trades")
     portfolios = relationship("TradePortfolio", back_populates="trade",
                             cascade="all, delete, delete-orphan")
-    prices = relationship("Price", back_populates="trade",
-                          cascade="all, delete, delete-orphan")
 
     def as_dict(self):
         result = {'id': self.id, 'name': self.name, 'created': str(self.created), 'status': str(self.status),
@@ -66,21 +64,3 @@ class TradePortfolio(Base):
     def as_dict(self):
         result = {'id': self.id, 'trade_id': self.trade_id, 'portfolio_id': self.portfolio_id}
         return result
-
-
-class Price(Base):
-    __tablename__ = 'prices'
-    id = Column(Integer, primary_key=True)
-    account_position_id = Column(Integer, ForeignKey('account_positions.id'))
-    model_position_id = Column(Integer, ForeignKey('model_positions.id'))
-    trade_id = Column(Integer, ForeignKey('trades.id'))
-    symbol = Column(String, nullable=False)
-    price = Column(Float)
-    trade = relationship("Trade", back_populates="prices")
-    model_position = relationship(
-        "ModelPosition", back_populates="trade_prices")
-    account_position = relationship(
-        "AccountPosition", back_populates="trade_prices")
-
-    def as_dict(self):
-        return {'id': self.id, 'trade_id': self.trade_id, 'symbol': self.symbol, 'price': str(self.price)}

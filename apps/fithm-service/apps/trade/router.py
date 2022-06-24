@@ -17,7 +17,6 @@ class TradeList(Resource):
 
     @trade.doc('create a trade')
     def post(self):
-
         return view.create_trade(request.json)
 
 

@@ -5,6 +5,8 @@ from libs.database.trade import (
     get_trade_prices,
     update_trade_prices, get_requests
 )
+from requests import HTTPError
+
 from ..account.models import AccountPosition
 from ..business.models import Business
 from ..portfolio.models import Portfolio
@@ -33,7 +35,7 @@ class TradeView:
         trade = Trade(
             business_id=g.business.id,
             name=name,
-            status=False,
+            status='active',
             created=datetime.utcnow()
         )
         db_session.add(trade)
@@ -82,16 +84,18 @@ class TradeView:
         '''Get portfolios for the trade'''
 
         trade = self.__get_trade(id)
+        if trade.status != 'active':
+            raise HTTPError("")
         portfolios = body['portfolios']
         current_portfolios = [p.id for p in trade.portfolios or []]
         new_portfolios = filter(lambda id: id not in current_portfolios, portfolios)
+        # Todo validate the portfolio has a model
         rem_portfolios = filter(lambda id: id not in portfolios, current_portfolios)
 
         db_session.query(TradePortfolio).filter(TradePortfolio.id.in_(rem_portfolios)).delete(False)
         new_items = [TradePortfolio(trade_id=id, portfolio_id=port_id) for port_id in new_portfolios]
         db_session.add_all(new_items)
         db_session.commit()
-
         return self.__get_trade(id).as_dict()
 
 

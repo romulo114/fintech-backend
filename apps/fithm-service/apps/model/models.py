@@ -50,8 +50,6 @@ class ModelPosition(Base):
     weight = Column(Float)
     price = Column(Float)
     model = relationship("Model", back_populates="allocation")
-    trade_prices = relationship(
-        "Price", back_populates="model_position", cascade="all, delete, delete-orphan")
 
     def as_dict(self):
         result = {'model_id': self.model_id,
