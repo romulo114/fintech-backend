@@ -10,6 +10,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import relationship
 from libs.database import Base, Stateful
+from libs.database.sql_base import db_session
 
 
 class Trade(Base):
@@ -23,13 +24,16 @@ class Trade(Base):
     portfolios = relationship("TradePortfolio", back_populates="trade",
                             cascade="all, delete, delete-orphan")
 
+    @property
+    def active_portfolios(self):
+        portfolios = db_session.query(TradePortfolio).filter(TradePortfolio.active==True)
+        return portfolios
+
     def as_dict(self):
         result = {'id': self.id, 'name': self.name, 'created': str(self.created), 'status': str(self.status),
                   'portfolios': [], 'prices': []}
         if self.portfolios:
             result['portfolios'] = [p.as_dict() for p in self.portfolios]
-        if self.prices:
-            result['prices'] = [p.as_dict() for p in self.prices]
         return result
 
 

@@ -87,13 +87,13 @@ class TradeView:
         if trade.status != 'active':
             raise HTTPError("")
         portfolios = body['portfolios']
-        current_portfolios = [p.id for p in trade.portfolios or []]
+        current_portfolios = [p.id for p in trade.active_portfolios or []]
         new_portfolios = filter(lambda id: id not in current_portfolios, portfolios)
         # Todo validate the portfolio has a model
         rem_portfolios = filter(lambda id: id not in portfolios, current_portfolios)
-
+        # Todo update to not delete tradeportfolio and instead mark as "inactive"
         db_session.query(TradePortfolio).filter(TradePortfolio.id.in_(rem_portfolios)).delete(False)
-        new_items = [TradePortfolio(trade_id=id, portfolio_id=port_id) for port_id in new_portfolios]
+        new_items = [TradePortfolio(trade_id=id, portfolio_id=port_id, active=True) for port_id in new_portfolios]
         db_session.add_all(new_items)
         db_session.commit()
         return self.__get_trade(id).as_dict()
