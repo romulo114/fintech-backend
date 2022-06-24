@@ -4,7 +4,7 @@ from sqlalchemy import (
     ForeignKey,
     Float,
     Integer,
-    Boolean
+    Boolean, UniqueConstraint
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects import postgresql
@@ -44,6 +44,9 @@ class Model(Stateful):
 
 class ModelPosition(Base):
     __tablename__ = 'model_positions'
+    __table_args__ = (
+        UniqueConstraint("model_id", "symbol"),
+    )
     id = Column(Integer, primary_key=True)
     model_id = Column(Integer, ForeignKey('models.id'), nullable=False)
     symbol = Column(String)

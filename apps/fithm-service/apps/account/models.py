@@ -3,7 +3,7 @@ from sqlalchemy import (
     String,
     ForeignKey,
     Integer,
-    Float
+    Float, UniqueConstraint
 )
 from sqlalchemy.orm import relationship
 from libs.database import Base, Stateful
@@ -30,6 +30,9 @@ class Account(Stateful):
 
 class AccountPosition(Base):
     __tablename__ = 'account_positions'
+    __table_args__ = (
+        UniqueConstraint("account_id", "symbol"),
+    )
     id = Column(Integer, primary_key=True)
     portfolio_id = Column(Integer, ForeignKey('portfolios.id'), nullable=False)
     account_id = Column(Integer, ForeignKey('accounts.id'), nullable=False)
