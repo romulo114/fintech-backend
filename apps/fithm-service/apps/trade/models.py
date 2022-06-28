@@ -5,7 +5,8 @@ from sqlalchemy import (
     Float,
     Boolean,
     Integer,
-    DateTime, UniqueConstraint
+    DateTime,
+    UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import relationship
@@ -14,31 +15,44 @@ from libs.database.sql_base import db_session
 
 
 class Trade(Base):
-    __tablename__ = 'trades'
+    __tablename__ = "trades"
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
-    business_id = Column(Integer, ForeignKey('business.id'), nullable=False)
+    business_id = Column(Integer, ForeignKey("business.id"), nullable=False)
     created = Column(DateTime, nullable=False)
-    status = Column('status', ENUM('active', 'inactive', 'retired', name='trade_status'), nullable=False)
+    status = Column(
+        "status",
+        ENUM("active", "inactive", "retired", name="trade_status"),
+        nullable=False,
+    )
     business = relationship("Business", back_populates="trades")
-    portfolios = relationship("TradePortfolio", back_populates="trade",
-                            cascade="all, delete, delete-orphan")
+    portfolios = relationship(
+        "TradePortfolio", back_populates="trade", cascade="all, delete, delete-orphan"
+    )
 
     @property
     def active_portfolios(self):
-        portfolios = db_session.query(TradePortfolio).filter(TradePortfolio.active==True)
+        portfolios = db_session.query(TradePortfolio).filter(
+            TradePortfolio.active == True
+        )
         return portfolios
 
     def as_dict(self):
-        result = {'id': self.id, 'name': self.name, 'created': str(self.created), 'status': str(self.status),
-                  'portfolios': [], 'prices': []}
+        result = {
+            "id": self.id,
+            "name": self.name,
+            "created": str(self.created),
+            "status": str(self.status),
+            "portfolios": [],
+            "prices": [],
+        }
         if self.portfolios:
-            result['portfolios'] = [p.as_dict() for p in self.portfolios]
+            result["portfolios"] = [p.as_dict() for p in self.portfolios]
         return result
 
 
 class TradeRequest(Base):
-    __tablename__ = 'trade_requests'
+    __tablename__ = "trade_requests"
     id = Column(Integer, primary_key=True)
     created = created = Column(DateTime, nullable=False)
     trade_id = Column(Integer, nullable=False)
@@ -54,17 +68,21 @@ class TradeRequest(Base):
 
 
 class TradePortfolio(Base):
-    __tablename__ = 'trade_portfolios'
+    __tablename__ = "trade_portfolios"
     __table_args__ = (
         UniqueConstraint("portfolio_id", "active", name="active_portfolio"),
     )
     id = Column(Integer, primary_key=True)
-    trade_id = Column(Integer, ForeignKey('trades.id'))
-    portfolio_id = Column(Integer, ForeignKey('portfolios.id'), nullable=False)
+    trade_id = Column(Integer, ForeignKey("trades.id"))
+    portfolio_id = Column(Integer, ForeignKey("portfolios.id"), nullable=False)
     active = Column(Boolean, nullable=False)
     trade = relationship("Trade", back_populates="portfolios")
     portfolio = relationship("Portfolio", back_populates="trades")
 
     def as_dict(self):
-        result = {'id': self.id, 'trade_id': self.trade_id, 'portfolio_id': self.portfolio_id}
+        result = {
+            "id": self.id,
+            "trade_id": self.trade_id,
+            "portfolio_id": self.portfolio_id,
+        }
         return result

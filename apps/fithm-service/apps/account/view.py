@@ -4,85 +4,84 @@ from libs.database import db_session
 from .models import Account
 from ..business.models import Business
 
-class AccountView:
 
+class AccountView:
     def __init__(self):
         pass
 
-
     def get_accounts(self):
-        '''Get all accounts owned by business'''
+        """Get all accounts owned by business"""
         business: Business = g.business
         accounts: List[Account] = business.accounts
         return {
-            'accounts': [account.as_dict() for account in accounts if account.active]
+            "accounts": [account.as_dict() for account in accounts if account.active]
         }
 
-
     def create_account(self, body: dict) -> dict:
-        '''Create a new account for the business'''
+        """Create a new account for the business"""
 
         # check existence
-        accounts = db_session.query(Account).filter(
-            Account.broker_name == body['broker_name'],
-            Account.account_number == body['account_number']
-        ).all()
+        accounts = (
+            db_session.query(Account)
+            .filter(
+                Account.broker_name == body["broker_name"],
+                Account.account_number == body["account_number"],
+            )
+            .all()
+        )
         if len(accounts):
-            abort(403, 'Account already exists')
+            abort(403, "Account already exists")
 
         # create an account
         account = Account(
             business_id=g.business.id,
-            broker_name=body['broker_name'],
-            account_number=body['account_number']
+            broker_name=body["broker_name"],
+            account_number=body["account_number"],
         )
-        if 'portfolio_id' in body and body['portfolio_id']:
-            account.portfolio_id = body['portfolio_id']
+        if "portfolio_id" in body and body["portfolio_id"]:
+            account.portfolio_id = body["portfolio_id"]
 
         db_session.add(account)
         db_session.commit()
 
         return account.as_dict()
 
-
     def get_account(self, id: int):
-        '''Get account detail'''
+        """Get account detail"""
 
         account = self.__get_account(id)
         if not account.active:
-            abort(401, 'Not active account')
+            abort(401, "Not active account")
 
         return account.as_dict()
 
-
     def update_account(self, id: int, body: dict) -> dict:
-        '''Update an existing account'''
+        """Update an existing account"""
 
         account = self.__get_account(id)
-        if 'account_number' in body:
-            account.account_number = body['account_number']
-        if 'broker_name' in body:
-            account.broker_name = body['broker_name']
+        if "account_number" in body:
+            account.account_number = body["account_number"]
+        if "broker_name" in body:
+            account.broker_name = body["broker_name"]
 
         db_session.commit()
         return account.as_dict()
 
-
     def delete_account(self, id: int):
-        '''Delete an account'''
+        """
+        Delete an account"""
 
         account = self.__get_account(id)
         db_session.delete(account)
         db_session.commit()
 
-        return { 'result': 'success' }
-
+        return {"result": "success"}
 
     def __get_account(self, id: int) -> Account:
 
         account = db_session.query(Account).get(id)
         if not account:
-            abort(404, 'Account not found')
+            abort(404, "Account not found")
         if account.business_id != g.business.id:
             abort(403, "You don't have permission to this account.")
 

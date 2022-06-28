@@ -1,13 +1,5 @@
 from sqlalchemy.orm import relationship, backref
-from sqlalchemy import (
-    Column,
-    String,
-    ForeignKey,
-    Float,
-    Integer,
-    DateTime,
-    Boolean
-)
+from sqlalchemy import Column, String, ForeignKey, Float, Integer, DateTime, Boolean
 from sqlalchemy.orm import relationship
 from libs.database import Base
 

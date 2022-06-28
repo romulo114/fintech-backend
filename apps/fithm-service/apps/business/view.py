@@ -5,28 +5,27 @@ from .models import Business
 
 
 class BusinessView:
-
     def __init__(self):
         pass
 
     def get_businesses(self):
-        '''Get all businesses owned by user'''
+        """Get all businesses owned by user"""
 
         business: Business = g.business
         businesses: List[Business] = business.businesses
         return {
-            'businesses': [business.as_dict() for business in businesses if business.active]
+            "businesses": [
+                business.as_dict() for business in businesses if business.active
+            ]
         }
 
     def create_business(self, body: dict) -> dict:
-        '''Create a new business for the user'''
+        """Create a new business for the user"""
 
         # check existence
-        business = db_session.query(Business).filter(
-            Business.id == g.business_id
-        ).all()
+        business = db_session.query(Business).filter(Business.id == g.business_id).all()
         if len(business):
-            abort(403, 'Business already exists')
+            abort(403, "Business already exists")
 
         # create an business
         business = Business(
@@ -39,7 +38,7 @@ class BusinessView:
         return business.as_dict()
 
     def get_business(self, id: int):
-        '''Get business detail'''
+        """Get business detail"""
 
         business = self.__get_business(id)
         # if not business.active:
@@ -48,33 +47,31 @@ class BusinessView:
         return business.as_dict()
 
     def update_business(self, id: int, body: dict) -> dict:
-        '''Update an existing business'''
+        """Update an existing business"""
 
         business = self.__get_business(id)
-        if 'business_number' in body:
-            business.business_number = body['business_number']
-        if 'broker_name' in body:
-            business.broker_name = body['broker_name']
+        if "business_number" in body:
+            business.business_number = body["business_number"]
+        if "broker_name" in body:
+            business.broker_name = body["broker_name"]
 
         db_session.commit()
         return business.as_dict()
 
-
     def delete_business(self, id: int):
-        '''Delete an business'''
+        """Delete an business"""
 
         business = self.__get_business(id)
         db_session.delete(business)
         db_session.commit()
 
-        return { 'result': 'success' }
-
+        return {"result": "success"}
 
     def __get_business(self, id: int) -> Business:
 
         business = db_session.query(Business).get(id)
         if not business:
-            abort(404, 'Business not found')
+            abort(404, "Business not found")
         if business.id != g.business.id:
             abort(403, "You don't have permission to this business.")
 

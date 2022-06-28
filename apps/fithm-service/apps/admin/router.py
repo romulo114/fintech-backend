@@ -1,12 +1,11 @@
 from flask_restx import Namespace, Resource
 
-admin = Namespace('admin')
+admin = Namespace("admin")
 
 
-@admin.route('/')
+@admin.route("/")
 class Admin(Resource):
-
-    @admin.doc('admin healthy')
+    @admin.doc("admin healthy")
     def get(self):
 
-        return f'Welcome admin'
+        return f"Welcome admin"

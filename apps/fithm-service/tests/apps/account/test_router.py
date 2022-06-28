@@ -38,3 +38,7 @@ def test_account_delete(app, business, account):
             f"/api/v1/accounts/{account.id}", query_string={"business_id": business.id}
         )
         assert response.status_code == 200
+
+
+def test_account_position_collection_put():
+    pass
