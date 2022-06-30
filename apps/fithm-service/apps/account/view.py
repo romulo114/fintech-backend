@@ -1,7 +1,7 @@
 from typing import List
 from flask import current_app, g, abort
 from libs.database import db_session
-from .models import Account
+from .models import Account, AccountPosition
 from ..business.models import Business
 
 
@@ -86,3 +86,41 @@ class AccountView:
             abort(403, "You don't have permission to this account.")
 
         return account
+
+
+class AccountPositionView:
+    def __init__(self):
+        pass
+
+    def get_positions(self, id: int, args: dict) -> list:
+        """Get positions for the account"""
+
+        account = self.__get_account(id)
+
+        return [position.as_dict() for position in account.positions]
+
+    def update_positions(self, id: int, body: dict) -> dict:
+        """Update positions for the account"""
+
+        positions = body['positions']
+        current_positions: list[AccountPosition] = self.__get_account_positions(id)
+        new_positions = [position for position in positions if "id" not in position.keys()]
+        remove_positions = filter(lambda id: id not in positions, current_positions)
+
+        # Todo update to not delete tradeportfolio and instead mark as "inactive"
+
+        for position in remove_positions:
+            position.state = "inactive"
+            db_session.add(position)
+        new_items = [
+            AccountPosition(account_id=id, accou active=True)
+            for port_id in new_portfolios
+        ]
+        db_session.add_all(new_items)
+        db_session.commit()
+
+        return self.__get_trade(id).as_dict()
+
+    def __get_account_positions(self, id: int) -> AccountPosition:
+
+        return db_session.query(Account).get(id).account_positions

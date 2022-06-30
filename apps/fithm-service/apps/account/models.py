@@ -44,15 +44,11 @@ class AccountPosition(Base):
         ),
     )
     id = Column(Integer, primary_key=True)
-    portfolio_id = Column(Integer, ForeignKey("portfolios.id"), nullable=False)
     account_id = Column(Integer, ForeignKey("accounts.id"), nullable=False)
-    account_number = Column(String, nullable=False)
-    broker_name = Column(String, nullable=False)
     symbol = Column(String, nullable=False)
     shares = Column(Float, nullable=False)
     is_cash = Column(Boolean, nullable=True)
     account = relationship("Account", back_populates="account_positions")
-    portfolio = relationship("Portfolio", back_populates="account_positions")
 
     def as_dict(self):
         return {
