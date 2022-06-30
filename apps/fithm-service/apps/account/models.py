@@ -36,7 +36,7 @@ class Account(Stateful):
         return result
 
 
-class AccountPosition(Base):
+class AccountPosition(Stateful):
     __tablename__ = "account_positions"
     __table_args__ = (
         UniqueConstraint(

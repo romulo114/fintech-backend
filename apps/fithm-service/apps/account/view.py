@@ -110,16 +110,16 @@ class AccountPositionView:
         # Todo update to not delete tradeportfolio and instead mark as "inactive"
 
         for position in remove_positions:
-            position.state = "inactive"
+            position.active = False
             db_session.add(position)
         new_items = [
-            AccountPosition(account_id=id, accou active=True)
-            for port_id in new_portfolios
+            AccountPosition(account_id=id, symbol=position["symbol"], shares=position["shares"], active=True)
+            for position in new_positions
         ]
         db_session.add_all(new_items)
         db_session.commit()
 
-        return self.__get_trade(id).as_dict()
+        return self.__get_account_positions(id).as_dict()
 
     def __get_account_positions(self, id: int) -> AccountPosition:
 
