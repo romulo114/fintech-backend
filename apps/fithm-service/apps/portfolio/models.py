@@ -17,11 +17,6 @@ class Portfolio(Stateful):
         back_populates="portfolio",
         cascade="all, delete, delete-orphan",
     )
-    account_positions = relationship(
-        "AccountPosition",
-        back_populates="portfolio",
-        cascade="all, delete, delete-orphan",
-    )
 
     def as_dict(self):
         result = {
