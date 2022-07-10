@@ -92,14 +92,14 @@ class AccountPositionView:
     def __init__(self):
         pass
 
-    def get_positions(self, id: int, args: dict) -> list:
+    def get_positions(self, id: int, args: dict = None) -> list:
         """Get positions for the account"""
 
-        account = self.__get_account(id)
+        account_positions = self.__get_account_positions(id)
 
-        return [position.as_dict() for position in account.positions]
+        return [position.as_dict() for position in account_positions]
 
-    def update_positions(self, id: int, body: dict) -> dict:
+    def update_positions(self, id: int, body: dict) -> list:
         """Update positions for the account"""
 
         positions = body['positions']
@@ -119,7 +119,7 @@ class AccountPositionView:
         db_session.add_all(new_items)
         db_session.commit()
 
-        return self.__get_account_positions(id).as_dict()
+        return [position.as_dict() for position in self.__get_account_positions(id)]
 
     def __get_account_positions(self, id: int) -> AccountPosition:
 

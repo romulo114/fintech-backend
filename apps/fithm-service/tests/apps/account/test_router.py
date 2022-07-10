@@ -40,5 +40,18 @@ def test_account_delete(app, business, account):
         assert response.status_code == 200
 
 
-def test_account_position_collection_put():
-    pass
+def test_account_position_collection_get(app, business, account):
+    with app.test_client() as test_client:
+        response = test_client.get(
+            f"/api/v1/accounts/{account.id}/positions", query_string={"business_id": business.id},
+        )
+    assert response.status_code == 200
+
+
+def test_account_position_collection_put(app, business, account):
+    with app.test_client() as test_client:
+        response = test_client.put(
+            f"/api/v1/accounts/{account.id}/positions",
+            json={"business_id": business.id, "positions": {}}
+        )
+    assert response.status_code == 200
