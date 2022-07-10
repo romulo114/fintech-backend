@@ -12,6 +12,7 @@ from sqlalchemy.orm import relationship
 from libs.database import Base, Stateful, db_session
 from apps.business.models import BusinessPrice
 
+
 class Account(Stateful):
     __tablename__ = "accounts"
     id = Column(Integer, primary_key=True)
@@ -61,6 +62,7 @@ class AccountPosition(Stateful):
     shares = Column(Float, nullable=False)
     is_cash = Column(Boolean, nullable=True)
     account = relationship("Account", back_populates="account_positions")
+    account_position_price = relationship("AccountPositionPrice", back_populates="account_position", uselist=False)
 
     def as_dict(self):
         return {
@@ -71,6 +73,7 @@ class AccountPosition(Stateful):
             "account_number": self.account_number,
             "symbol": self.symbol,
             "shares": str(self.shares),
+            "price": self.price
         }
 
 
@@ -78,9 +81,11 @@ class AccountPositionPrice(Base):
     __tablename__ = "account_position_price"
     id = Column(Integer, primary_key=True)
     account_position_id = Column(
-        Integer, ForeignKey("account_positions.id"), nullable=False
+        Integer, ForeignKey("account_positions.id"), nullable=False,
     )
     business_price_id = Column(Integer, ForeignKey("business_price.id"), nullable=False)
+    account_position = relationship("AccountPosition", back_populates="account_position_price")
+    price = relationship("BusinessPrice", back_populates="account_position_prices")
 
     @property
     def has_price(self):

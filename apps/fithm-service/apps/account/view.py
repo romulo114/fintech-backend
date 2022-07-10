@@ -1,8 +1,9 @@
+import datetime
 from typing import List
 from flask import current_app, g, abort
 from libs.database import db_session
-from .models import Account, AccountPosition
-from ..business.models import Business
+from .models import Account, AccountPosition, AccountPositionPrice
+from ..business.models import Business, BusinessPrice
 
 
 class AccountView:
@@ -101,13 +102,13 @@ class AccountPositionView:
 
     def update_positions(self, id: int, body: dict) -> list:
         """Update positions for the account"""
-
+        business_id = body['business_id']
         positions = body['positions']
         current_positions: list[AccountPosition] = self.__get_account_positions(id)
         new_positions = [position for position in positions if "id" not in position.keys()]
         remove_positions = filter(lambda id: id not in positions, current_positions)
-
-        # Todo update to not delete tradeportfolio and instead mark as "inactive"
+        keep_positions = filter(lambda id: id in positions, current_positions)
+        # todo update current positions shares if changed.
 
         for position in remove_positions:
             position.active = False
@@ -116,7 +117,27 @@ class AccountPositionView:
             AccountPosition(account_id=id, symbol=position["symbol"], shares=position["shares"], active=True)
             for position in new_positions
         ]
+        for account_position in new_items:
+            business_price = db_session.query(BusinessPrice).filter(
+                BusinessPrice.id == business_id,
+                BusinessPrice.symbol == account_position.symbol).one_or_none()
+            if business_price:
+                db_session.add(AccountPositionPrice(
+                    account_position=account_position,
+                    business_price=business_price,
+                ))
+            else:
+                new_business_price = db_session.add(BusinessPrice(
+                    business_id=business_id,
+                    symbol=account_position.symbol,
+                    updated=datetime.datetime.now()
+                ))
+                db_session.add(AccountPositionPrice(
+                    account_position=account_position,
+                    business_price=new_business_price,
+                ))
         db_session.add_all(new_items)
+
         db_session.commit()
 
         return [position.as_dict() for position in self.__get_account_positions(id)]
