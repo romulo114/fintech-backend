@@ -8,8 +8,9 @@ from sqlalchemy import (
     Boolean,
 )
 from sqlalchemy.orm import relationship
-from libs.database import Base, Stateful
 
+from libs.database import Base, Stateful, db_session
+from apps.business.models import BusinessPrice
 
 class Account(Stateful):
     __tablename__ = "accounts"
@@ -32,8 +33,19 @@ class Account(Stateful):
             "account_number": self.account_number,
             "broker_name": self.broker_name,
             "portfolio_id": self.portfolio_id,
+            "account_positions": [position.as_dict() for position in self.account_positions],
+            "has_prices": self.has_prices,
+            "has_cash_position": self.has_cash_position,
         }
         return result
+
+    @property
+    def has_prices(self):
+        return True if all([account_position.has_price for account_position in self.account_positions]) else False
+
+    @property
+    def has_cash_position(self):
+        return True if any([account_position.is_cash for account_position in self.account_positions]) else False
 
 
 class AccountPosition(Stateful):
@@ -69,3 +81,9 @@ class AccountPositionPrice(Base):
         Integer, ForeignKey("account_positions.id"), nullable=False
     )
     business_price_id = Column(Integer, ForeignKey("business_price.id"), nullable=False)
+
+    @property
+    def has_price(self):
+        if db_session.query(BusinessPrice).get(self.business_price_id) > 0:
+            return True
+        return False
