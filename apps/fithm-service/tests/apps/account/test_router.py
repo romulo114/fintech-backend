@@ -52,6 +52,6 @@ def test_account_position_collection_put(app, business, account):
     with app.test_client() as test_client:
         response = test_client.put(
             f"/api/v1/accounts/{account.id}/positions",
-            json={"business_id": business.id, "positions": {}}
+            json={"business_id": business.id, "positions": [{"symbol": "AGG", "shares": 1}]}
         )
     assert response.status_code == 200

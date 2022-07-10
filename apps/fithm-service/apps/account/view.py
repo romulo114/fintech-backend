@@ -124,17 +124,19 @@ class AccountPositionView:
             if business_price:
                 db_session.add(AccountPositionPrice(
                     account_position=account_position,
-                    business_price=business_price,
+                    price=business_price,
                 ))
             else:
-                new_business_price = db_session.add(BusinessPrice(
+                new_business_price = BusinessPrice(
                     business_id=business_id,
                     symbol=account_position.symbol,
                     updated=datetime.datetime.now()
-                ))
+                )
+                db_session.add(new_business_price)
+                db_session.flush()
                 db_session.add(AccountPositionPrice(
                     account_position=account_position,
-                    business_price=new_business_price,
+                    business_price_id=new_business_price.id,
                 ))
         db_session.add_all(new_items)
 

@@ -48,3 +48,6 @@ class BusinessPrice(Base):
     price = Column(Float)
     updated = Column(DateTime, nullable=False)
     account_position_prices = relationship("AccountPositionPrice", back_populates="price")
+
+    def as_dict(self):
+        return {"id": self.id}

@@ -67,13 +67,10 @@ class AccountPosition(Stateful):
     def as_dict(self):
         return {
             "id": self.id,
-            "portfolio_id": self.portfolio_id,
             "account_id": self.account_id,
-            "broker_name": self.broker_name,
-            "account_number": self.account_number,
             "symbol": self.symbol,
             "shares": str(self.shares),
-            "price": self.price
+            "price": self.account_position_price.price.as_dict()
         }
 
 
