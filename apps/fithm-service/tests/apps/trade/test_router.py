@@ -36,7 +36,8 @@ def test_trade_put(app, business, trade):
 def test_trade_put_add_portfolio(app, business, trade, portfolio):
     with app.test_client() as test_client:
         response = test_client.post(
-            f"/api/v1/trades/{trade.id}/portfolios", json={'business_id': business.id, "portfolios": [portfolio.id]
+            f"/api/v1/trades/{trade.id}/portfolios", json={'business_id': business.id,
+                                                           "portfolios": [portfolio.id]
                                                            }
         )
     assert response.status_code == 200

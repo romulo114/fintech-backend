@@ -37,17 +37,18 @@ class Trade(Base):
         )
         return portfolios
 
-    def as_dict(self):
+    def as_dict(self, include_account_positions=False):
+        import pdb
+        pdb.set_trace()
         result = {
             "id": self.id,
             "name": self.name,
             "created": str(self.created),
             "status": str(self.status),
             "portfolios": [],
-            "prices": [],
         }
         if self.portfolios:
-            result["portfolios"] = [p.as_dict() for p in self.portfolios]
+            result["portfolios"] = [p.as_dict(include_account_positions) for p in self.portfolios]
         return result
 
 
@@ -83,6 +84,6 @@ class TradePortfolio(Base):
         result = {
             "id": self.id,
             "trade_id": self.trade_id,
-            "portfolio_id": self.portfolio_id,
+            "portfolio": self.portfolio.as_dict(),
         }
         return result

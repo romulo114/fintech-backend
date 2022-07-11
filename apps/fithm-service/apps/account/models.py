@@ -28,17 +28,18 @@ class Account(Stateful):
         cascade="all, delete, delete-orphan",
     )
 
-    def as_dict(self):
+    def as_dict(self, include_account_positions=True):
         result = {
             "id": self.id,
             "account_number": self.account_number,
             "broker_name": self.broker_name,
             "portfolio_id": self.portfolio_id,
-            "account_positions": [position.as_dict() for position in self.account_positions],
             "has_prices": self.has_prices,
             "has_cash_position": self.has_cash_position,
         }
-        return result
+        if include_account_positions:
+            result["account_positions"] = [position.as_dict() for position in self.account_positions],
+            return result
 
     @property
     def has_prices(self):

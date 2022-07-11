@@ -122,6 +122,42 @@ def account(db_session, business, portfolio):
     db_session.commit()
     return account
 
+@pytest.fixture
+def account_position(db_session, account):
+    from apps.account.models import AccountPosition
+
+    account_position = AccountPosition(
+        account_id=account.id, symbol="AGG", shares=20,
+    )
+    db_session.add(account_position)
+    db_session.commit()
+    return account_position
+
+@pytest.fixture
+def portfolio_account_account_position(db_session, business):
+    from apps.portfolio.models import Portfolio
+    portfolio = Portfolio(business_id=business.id)
+    db_session.add(portfolio)
+    db_session.flush()
+    from apps.account.models import Account
+
+    account = Account(
+        business_id=business.id,
+        account_number="888",
+        broker_name="test broker",
+        portfolio_id=portfolio.id,
+    )
+    db_session.add(account)
+    db_session.flush()
+    from apps.account.models import AccountPosition
+
+    account_position = AccountPosition(
+        account_id=account.id, symbol="AGG", shares=20,
+    )
+    db_session.add(account_position)
+    db_session.commit()
+    return portfolio
+
 
 @pytest.fixture
 def trade(db_session, business, portfolio):

@@ -18,18 +18,17 @@ class Portfolio(Stateful):
         cascade="all, delete, delete-orphan",
     )
 
-    def as_dict(self):
+    def as_dict(self, include_account_positions=False):
         result = {
             "id": self.id,
             "name": self.name,
             "model": None,
-            "trades": [],
             "accounts": [],
         }
         if self.accounts:
-            result["accounts"] = [a.as_dict() for a in self.accounts]
+            result["accounts"] = [a.as_dict(include_account_positions) for a in self.accounts]
+            result["has_prices"] = all([account.has_prices for account in self.accounts])
+            result["has_cash_position"] = all([account.has_cash_position for account in self.accounts])
         if self.model:
             result["model"] = self.model.as_dict()
-        if self.trades:
-            result["trades"] = [p.as_dict() for p in self.trades]
         return result
