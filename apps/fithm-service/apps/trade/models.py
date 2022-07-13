@@ -38,8 +38,6 @@ class Trade(Base):
         return portfolios
 
     def as_dict(self, include_account_positions=False):
-        import pdb
-        pdb.set_trace()
         result = {
             "id": self.id,
             "name": self.name,
@@ -80,10 +78,10 @@ class TradePortfolio(Base):
     trade = relationship("Trade", back_populates="portfolios")
     portfolio = relationship("Portfolio", back_populates="trades")
 
-    def as_dict(self):
+    def as_dict(self, include_account_positions=False):
         result = {
             "id": self.id,
             "trade_id": self.trade_id,
-            "portfolio": self.portfolio.as_dict(),
+            "portfolio": self.portfolio.as_dict(include_account_positions),
         }
         return result

@@ -39,11 +39,11 @@ class Account(Stateful):
         }
         if include_account_positions:
             result["account_positions"] = [position.as_dict() for position in self.account_positions],
-            return result
+        return result
 
     @property
     def has_prices(self):
-        return True if all([account_position.has_price for account_position in self.account_positions]) else False
+        return True if all([account_position.account_position_price.has_price for account_position in self.account_positions]) else False
 
     @property
     def has_cash_position(self):
@@ -87,6 +87,6 @@ class AccountPositionPrice(Base):
 
     @property
     def has_price(self):
-        if db_session.query(BusinessPrice).get(self.business_price_id) > 0:
+        if db_session.query(BusinessPrice.price).filter(BusinessPrice.id==self.business_price_id).one()[0] > 0:
             return True
         return False

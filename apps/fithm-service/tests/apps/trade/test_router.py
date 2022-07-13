@@ -41,3 +41,15 @@ def test_trade_put_add_portfolio(app, business, trade, portfolio):
                                                            }
         )
     assert response.status_code == 200
+
+
+def test_trade_get_with_portfolio_account_account_position(app, business, trade, portfolio_account_account_position):
+    with app.test_client() as test_client:
+        response = test_client.post(
+            f"/api/v1/trades/{trade.id}/portfolios", json={'business_id': business.id,
+                                                           "portfolios": [portfolio_account_account_position.id]
+                                                           }
+        )
+    print(response.json)
+    assert response.status_code == 200
+

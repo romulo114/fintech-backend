@@ -155,6 +155,22 @@ def portfolio_account_account_position(db_session, business):
         account_id=account.id, symbol="AGG", shares=20,
     )
     db_session.add(account_position)
+    db_session.flush()
+    from apps.business.models import BusinessPrice
+    business_price = BusinessPrice(
+        business_id=business.id,
+        symbol="AGG",
+        price=22,
+        updated=dt.datetime.now()
+    )
+    db_session.add(business_price)
+    db_session.flush()
+    from apps.account.models import AccountPositionPrice
+    account_position_price = AccountPositionPrice(
+        account_position_id=account_position.id,
+        business_price_id=business_price.id
+    )
+    db_session.add(account_position_price)
     db_session.commit()
     return portfolio
 
