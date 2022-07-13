@@ -29,9 +29,9 @@ class Portfolio(Stateful):
             result["accounts"] = [
                 a.as_dict(include_account_positions) for a in self.accounts
             ]
-            result["has_prices"] = all(
+            result["has_prices"] = all([all(
                 [account.has_prices for account in self.accounts]
-            )
+            ), self.model.has_price])
             result["has_cash_positions"] = all(
                 [account.has_cash_position for account in self.accounts]
             )

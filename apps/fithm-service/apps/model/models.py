@@ -57,7 +57,6 @@ class ModelPosition(Base):
     model_id = Column(Integer, ForeignKey("models.id"), nullable=False)
     symbol = Column(String)
     weight = Column(Float)
-    price = Column(Float)
     model = relationship("Model", back_populates="allocation")
 
     def as_dict(self):

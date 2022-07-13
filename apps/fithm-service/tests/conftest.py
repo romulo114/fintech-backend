@@ -172,6 +172,18 @@ def portfolio_account_account_position(db_session, business):
     )
     db_session.add(account_position_price)
     db_session.commit()
+
+    from apps.model.models import Model
+    model = Model(business_id=business.id)
+    db_session.add(model)
+    db_session.flush()
+
+    from apps.model.models import ModelPosition
+    model_position = ModelPosition(model_id=model.id,
+                                   symbol="AGG",
+                                   weight=0.25)
+
+
     return portfolio
 
 
