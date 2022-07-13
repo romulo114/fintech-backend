@@ -106,6 +106,7 @@ class AccountPositionPrice(Base):
         nullable=False,
     )
     business_price_id = Column(Integer, ForeignKey("business_price.id"), nullable=False)
+    is_manual = Column(Boolean)
     account_position = relationship(
         "AccountPosition", back_populates="account_position_price"
     )

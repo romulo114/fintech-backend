@@ -90,6 +90,7 @@ class ModelPositionPrice(Base):
         Integer, ForeignKey("model_positions.id"), nullable=False
     )
     business_price_id = Column(Integer, ForeignKey("business_price.id"), nullable=False)
+    is_manual = Column(Boolean)
     model_position = relationship(
         "ModelPosition", back_populates="model_position_price"
     )
