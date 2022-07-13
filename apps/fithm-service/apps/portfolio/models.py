@@ -26,9 +26,15 @@ class Portfolio(Stateful):
             "accounts": [],
         }
         if self.accounts:
-            result["accounts"] = [a.as_dict(include_account_positions) for a in self.accounts]
-            result["has_prices"] = all([account.has_prices for account in self.accounts])
-            result["has_cash_positions"] = all([account.has_cash_position for account in self.accounts])
+            result["accounts"] = [
+                a.as_dict(include_account_positions) for a in self.accounts
+            ]
+            result["has_prices"] = all(
+                [account.has_prices for account in self.accounts]
+            )
+            result["has_cash_positions"] = all(
+                [account.has_cash_position for account in self.accounts]
+            )
         if self.model:
             result["model"] = self.model.as_dict()
         return result

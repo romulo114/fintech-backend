@@ -9,7 +9,9 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects import postgresql
-from libs.database import Base, Stateful
+
+from apps.business.models import BusinessPrice
+from libs.database import Base, Stateful, db_session
 
 
 class Model(Stateful):
@@ -74,3 +76,18 @@ class ModelPositionPrice(Base):
         Integer, ForeignKey("model_positions.id"), nullable=False
     )
     business_price_id = Column(Integer, ForeignKey("business_price.id"), nullable=False)
+    model_position = relationship(
+        "ModelPosition", back_populates="model_position_price"
+    )
+    price = relationship("BusinessPrice", back_populates="account_position_prices")
+
+    @property
+    def has_price(self):
+        if (
+            db_session.query(BusinessPrice.price)
+            .filter(BusinessPrice.id == self.business_price_id)
+            .one()[0]
+            > 0
+        ):
+            return True
+        return False

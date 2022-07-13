@@ -46,7 +46,9 @@ class Trade(Base):
             "portfolios": [],
         }
         if self.portfolios:
-            result["portfolios"] = [p.as_dict(include_account_positions) for p in self.portfolios]
+            result["portfolios"] = [
+                p.as_dict(include_account_positions) for p in self.portfolios
+            ]
         return result
 
 

@@ -102,10 +102,12 @@ class AccountPositionView:
 
     def update_positions(self, id: int, body: dict) -> list:
         """Update positions for the account"""
-        business_id = body['business_id']
-        positions = body['positions']
+        business_id = body["business_id"]
+        positions = body["positions"]
         current_positions: list[AccountPosition] = self.__get_account_positions(id)
-        new_positions = [position for position in positions if "id" not in position.keys()]
+        new_positions = [
+            position for position in positions if "id" not in position.keys()
+        ]
         remove_positions = filter(lambda id: id not in positions, current_positions)
         keep_positions = filter(lambda id: id in positions, current_positions)
         # todo update current positions shares if changed.
@@ -114,30 +116,44 @@ class AccountPositionView:
             position.active = False
             db_session.add(position)
         new_items = [
-            AccountPosition(account_id=id, symbol=position["symbol"], shares=position["shares"], active=True)
+            AccountPosition(
+                account_id=id,
+                symbol=position["symbol"],
+                shares=position["shares"],
+                active=True,
+            )
             for position in new_positions
         ]
         for account_position in new_items:
-            business_price = db_session.query(BusinessPrice).filter(
-                BusinessPrice.id == business_id,
-                BusinessPrice.symbol == account_position.symbol).one_or_none()
+            business_price = (
+                db_session.query(BusinessPrice)
+                .filter(
+                    BusinessPrice.id == business_id,
+                    BusinessPrice.symbol == account_position.symbol,
+                )
+                .one_or_none()
+            )
             if business_price:
-                db_session.add(AccountPositionPrice(
-                    account_position=account_position,
-                    price=business_price,
-                ))
+                db_session.add(
+                    AccountPositionPrice(
+                        account_position=account_position,
+                        price=business_price,
+                    )
+                )
             else:
                 new_business_price = BusinessPrice(
                     business_id=business_id,
                     symbol=account_position.symbol,
-                    updated=datetime.datetime.now()
+                    updated=datetime.datetime.now(),
                 )
                 db_session.add(new_business_price)
                 db_session.flush()
-                db_session.add(AccountPositionPrice(
-                    account_position=account_position,
-                    business_price_id=new_business_price.id,
-                ))
+                db_session.add(
+                    AccountPositionPrice(
+                        account_position=account_position,
+                        business_price_id=new_business_price.id,
+                    )
+                )
         db_session.add_all(new_items)
 
         db_session.commit()
