@@ -109,7 +109,7 @@ class AccountPositionPrice(Base):
     account_position = relationship(
         "AccountPosition", back_populates="account_position_price"
     )
-    price = relationship("BusinessPrice", back_populates="account_position_prices")
+    account_price = relationship("BusinessPrice", back_populates="account_position_prices")
 
     @property
     def has_price(self):

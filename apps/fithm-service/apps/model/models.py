@@ -31,19 +31,33 @@ class Model(Stateful):
     )
     portfolio = relationship("Portfolio", back_populates="model")
 
-    def as_dict(self):
+    def as_dict(self, include_model_positions=False):
         result = {
             "id": self.id,
             "name": self.name,
             "keywords": [],
             "is_public": self.is_public,
             "description": self.description,
+            "has_prices": self.has_prices
         }
-        if self.allocation:
+        if include_model_positions:
             result["positions"] = [a.as_dict() for a in self.allocation]
         if self.keywords:
             result["keywords"] = [k for k in self.keywords]
         return result
+
+    @property
+    def has_prices(self):
+        return (
+            True
+            if all(
+                [
+                    model_position.model_position_price.has_price
+                    for model_position in self.allocation
+                ]
+            )
+            else False
+        )
 
 
 class ModelPosition(Base):
@@ -58,6 +72,7 @@ class ModelPosition(Base):
     symbol = Column(String)
     weight = Column(Float)
     model = relationship("Model", back_populates="allocation")
+    model_position_price = relationship("ModelPositionPrice", back_populates="model_position", uselist=False)
 
     def as_dict(self):
         result = {
@@ -78,7 +93,7 @@ class ModelPositionPrice(Base):
     model_position = relationship(
         "ModelPosition", back_populates="model_position_price"
     )
-    price = relationship("BusinessPrice", back_populates="account_position_prices")
+    model_price = relationship("BusinessPrice", back_populates="model_position_prices")
 
     @property
     def has_price(self):

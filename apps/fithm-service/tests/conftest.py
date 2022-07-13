@@ -135,8 +135,13 @@ def account_position(db_session, account):
 
 @pytest.fixture
 def portfolio_account_account_position(db_session, business):
+    from apps.model.models import Model
+    model = Model(business_id=business.id)
+    db_session.add(model)
+    db_session.flush()
+
     from apps.portfolio.models import Portfolio
-    portfolio = Portfolio(business_id=business.id)
+    portfolio = Portfolio(business_id=business.id, model_id=model.id)
     db_session.add(portfolio)
     db_session.flush()
     from apps.account.models import Account
@@ -171,19 +176,19 @@ def portfolio_account_account_position(db_session, business):
         business_price_id=business_price.id
     )
     db_session.add(account_position_price)
-    db_session.commit()
 
-    from apps.model.models import Model
-    model = Model(business_id=business.id)
-    db_session.add(model)
+    from apps.model.models import ModelPosition, ModelPositionPrice
+    model_position = ModelPosition(model_id=model.id, symbol="AGG", weight=0.25)
+    db_session.add(model_position)
+    db_session.flush()
+    model_position_price = ModelPositionPrice(
+        model_position_id=model_position.id,
+        business_price_id=business_price.id
+    )
+    db_session.add(model_position_price)
     db_session.flush()
 
-    from apps.model.models import ModelPosition
-    model_position = ModelPosition(model_id=model.id,
-                                   symbol="AGG",
-                                   weight=0.25)
-
-
+    db_session.commit()
     return portfolio
 
 
@@ -206,3 +211,4 @@ def trade(db_session, business, portfolio):
     )
     db_session.add(trade_portfolio)
     db_session.commit()
+    return trade

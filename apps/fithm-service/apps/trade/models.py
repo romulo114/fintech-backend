@@ -37,7 +37,7 @@ class Trade(Base):
         )
         return portfolios
 
-    def as_dict(self, include_account_positions=False):
+    def as_dict(self, include_account_positions=False, include_model_positions=False):
         result = {
             "id": self.id,
             "name": self.name,
@@ -47,7 +47,8 @@ class Trade(Base):
         }
         if self.portfolios:
             result["portfolios"] = [
-                p.as_dict(include_account_positions) for p in self.portfolios
+                p.as_dict(include_account_positions=include_account_positions,
+                          include_model_positions=include_model_positions) for p in self.portfolios
             ]
         return result
 
@@ -80,10 +81,11 @@ class TradePortfolio(Base):
     trade = relationship("Trade", back_populates="portfolios")
     portfolio = relationship("Portfolio", back_populates="trades")
 
-    def as_dict(self, include_account_positions=False):
+    def as_dict(self, include_account_positions=False, include_model_positions=False):
         result = {
             "id": self.id,
             "trade_id": self.trade_id,
-            "portfolio": self.portfolio.as_dict(include_account_positions),
+            "portfolio": self.portfolio.as_dict(include_account_positions=include_account_positions,
+                                                include_model_positions=include_model_positions),
         }
         return result
