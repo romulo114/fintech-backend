@@ -63,13 +63,7 @@ class Trade(Base):
     def get_trade_positions(self):
         positions = []
         for portfolio in self.active_portfolios:
-            for account in portfolio.accounts:
-                for account_position in account.account_positions:
-                    if not account_position.position_price.is_manual:
-                        positions.append(account_position.symbol)
-            for model_position in portfolio.model_positions:
-                if not model_position.position_price.is_manual:
-                        positions.append(model_position.symbol)
+            positions.extend(portfolio.get_account_positions)
         return positions
 
     def get_unique_trade_positions(self):

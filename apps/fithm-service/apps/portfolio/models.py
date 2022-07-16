@@ -30,6 +30,20 @@ class Portfolio(Stateful):
             [account.has_cash_position for account in self.accounts]
         )
 
+    def get_account_positions(self):
+        positions = []
+        for account in self.accounts:
+            for account_position in account.account_positions:
+                positions.append(account_position.symbol)
+        return positions
+
+    def get_model_positions(self):
+        positions = []
+        for model_position in self.model_positions:
+            if not model_position.position_price.is_manual:
+                self.append(model_position.symbol)
+        return positions
+
     def as_dict(self, include_account_positions=False, include_model_positions=False):
         result = {
             "id": self.id,
