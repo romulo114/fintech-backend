@@ -37,6 +37,10 @@ class Trade(Base):
         )
         return portfolios
 
+    @property
+    def validated(self):
+        return
+
     def as_dict(self, include_account_positions=False, include_model_positions=False):
         result = {
             "id": self.id,
@@ -44,13 +48,32 @@ class Trade(Base):
             "created": str(self.created),
             "status": str(self.status),
             "portfolios": [],
+
         }
         if self.portfolios:
             result["portfolios"] = [
                 p.as_dict(include_account_positions=include_account_positions,
                           include_model_positions=include_model_positions) for p in self.portfolios
             ]
+            result["has_prices"] = all([p.has_prices for p in self.portfolios]),
+            result["has_cash_positions"] = all(p.has_cash_positions for p in self.portfolios)
+
         return result
+
+    def get_trade_positions(self):
+        positions = []
+        for portfolio in self.active_portfolios:
+            for account in portfolio.accounts:
+                for account_position in account.account_positions:
+                    if not account_position.position_price.is_manual:
+                        positions.append(account_position.symbol)
+            for model_position in portfolio.model_positions:
+                if not model_position.position_price.is_manual:
+                        positions.append(model_position.symbol)
+        return positions
+
+    def get_unique_trade_positions(self):
+        return set(self.get_trade_positions())
 
 
 class TradeRequest(Base):

@@ -18,6 +18,18 @@ class Portfolio(Stateful):
         cascade="all, delete, delete-orphan",
     )
 
+    @property
+    def has_prices(self):
+        return all([all(
+            [account.has_prices for account in self.accounts]
+        ), self.model.has_prices])
+
+    @property
+    def has_cash_positions(self):
+        return all(
+            [account.has_cash_position for account in self.accounts]
+        )
+
     def as_dict(self, include_account_positions=False, include_model_positions=False):
         result = {
             "id": self.id,
@@ -29,12 +41,8 @@ class Portfolio(Stateful):
             result["accounts"] = [
                 a.as_dict(include_account_positions) for a in self.accounts
             ]
-            result["has_prices"] = all([all(
-                [account.has_prices for account in self.accounts]
-            ), self.model.has_prices])
-            result["has_cash_positions"] = all(
-                [account.has_cash_position for account in self.accounts]
-            )
+            result["has_prices"] = self.has_prices
+            result["has_cash_positions"] = self.has_cash_positions
         if self.model:
             result["model"] = self.model.as_dict(include_model_positions)
         return result
