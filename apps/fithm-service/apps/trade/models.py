@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from sqlalchemy import (
     Column,
     String,
@@ -68,6 +70,23 @@ class Trade(Base):
 
     def get_unique_trade_positions(self):
         return set(self.get_trade_positions())
+
+    def get_prices(self):
+        d = defaultdict(set)
+        for portfolio in self.portfolios:
+            for account in portfolio.accounts:
+                account_prices = account.get_prices()
+                for key, value in account_prices.items:
+                    d[key] = value
+            model_prices = portfolio.model.get_prices()
+            for key, value in model_prices:
+                d[key] = value
+        return d
+        """
+
+        :return: dict {symbol: price}
+        """
+        pass
 
 
 class TradeRequest(Base):

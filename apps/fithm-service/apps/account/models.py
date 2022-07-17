@@ -69,6 +69,14 @@ class Account(Stateful):
             else False
         )
 
+    def get_prices(self):
+        return [
+            {
+                account_position.account_position_price.account_price.symbol: account_position.account_position_price.account_price.price
+            }
+            for account_position in self.account_positions
+        ]
+
 
 class AccountPosition(Stateful):
     __tablename__ = "account_positions"
@@ -110,7 +118,9 @@ class AccountPositionPrice(Base):
     account_position = relationship(
         "AccountPosition", back_populates="account_position_price"
     )
-    account_price = relationship("BusinessPrice", back_populates="account_position_prices")
+    account_price = relationship(
+        "BusinessPrice", back_populates="account_position_prices"
+    )
 
     @property
     def has_price(self):

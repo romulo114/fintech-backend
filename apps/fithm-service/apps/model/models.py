@@ -59,6 +59,14 @@ class Model(Stateful):
             else False
         )
 
+    def get_prices(self):
+        return [
+            {
+                model_position.model_position_price.model_price.symbol: model_position.model_position_price.model_price.price
+            }
+            for model_position in self.model_positions
+        ]
+
 
 class ModelPosition(Base):
     __tablename__ = "model_positions"

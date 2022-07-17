@@ -89,7 +89,7 @@ def get_requests(trade: Trade, args: dict):
     if any([True if p.model_id is None else False for p in portfolios]):
         return ValueError('One of your portfolios has not been assigned a model.')
 
-    models = [portfolio.model for portflio in trade.portfolios]
+    models = [portfolio.model for portfolio in trade.portfolios]
     # add portfolio_id to each model position
     for p in portfolios:
         for m in models:
