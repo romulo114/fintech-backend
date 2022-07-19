@@ -5,31 +5,11 @@ from apps.account.models import Account, AccountPosition
 from apps.business.models import Business
 from apps.model.models import Model
 from apps.portfolio.models import Portfolio
-from apps.trade.models import Trade #Pending, Price, TradeRequest
+from apps.trade.models import Trade
 
-# import pandas as pd
-# from iexfinance.stocks import Stock
-# from datetime import datetime
-
-# def remove_all_pending_positions(trade: Trade):
-
-#     db_session.query(Price).filter(Price.trade_id == trade.id).delete(False)
-
-#     pending_ids = [p.id for p in trade.pendings]
-#     db_session.query(AccountPosition).filter(AccountPosition.pending_id.in_(pending_ids)).delete(False)
-#     db_session.commit()
-
-
-# def update_account_positions(trade: Trade, positions: list[AccountPosition]):
-
-#     if not len(positions):
-#         return remove_all_pending_positions(trade)
-
-#     new_positions, pending_positions = prepare_update(trade, positions)
-#     if new_positions != None:
-#         create_pending_account_positions(trade, new_positions, pending_positions)
-#         remove_pending_account_positions(new_positions, pending_positions)
-
+import pandas as pd
+from iexfinance.stocks import Stock
+from datetime import datetime
 
 def get_trade_prices(trade: Trade, use: str = 'read'):
 
@@ -76,13 +56,12 @@ def update_trade_prices(trade: Trade, prices = None):
     db_session.commit()
 
 
-def get_requests(trade: Trade, args: dict):
+def get_trade_instructions(trade: Trade, args: dict):
 
     return []
     
     # get all symbols from all models in trade
-    # pendings: list[Pending] = trade.pendings
-    # pending_ids = [p.id for p in pendings]
+
     positions = db_session.query(AccountPosition).filter(AccountPosition.pending_id.in_(pending_ids)).all()
     portfolios = trade.portfolios
 
@@ -150,9 +129,9 @@ def get_requests(trade: Trade, args: dict):
         db_session.bulk_save_objects(df_all_positions.archive.tolist())
         db_session.commit()
         all_trades = []
-        # for t in all_requests:
-        #     trade_manager = TradeManager('json', t['portfolio'])
-        #     all_trades.append(trade_manager.trade_instructions.to_dict(orient='records'))
+        for t in all_requests:
+            trade_manager = TradeManager('json', t['portfolio'])
+            all_trades.append(trade_manager.trade_instructions.to_dict(orient='records'))
         return all_trades
     else:
         return all_requests
@@ -160,7 +139,7 @@ def get_requests(trade: Trade, args: dict):
 
 def get_iex(trade: Trade):
 
-    current = get_trade_prices(trade)['symbol']
+    current = trade.get_prices()
     account_cash = current.loc[current == 'account_cash'].any()
     current = current.loc[current != 'account_cash']
 
@@ -180,113 +159,3 @@ def get_iex(trade: Trade):
         result.append({'price': 1, 'symbol': 'account_cash'})
 
     return result
-
-
-# def prepare_update(trade: Trade, positions: list[AccountPosition]):
-
-#     pendings: list[Pending] = trade.pendings
-#     if not len(pendings):
-#         current_app.logger.error('You cannot add positions until portfolios have been added to the trade.')
-#         return (None, None)
-
-#     pending_portfolios: list[Portfolio] = [p.portfolio for p in pendings]
-#     pending_accounts: list[list[Account]] = [a.accounts for a in pending_portfolios]
-
-#     pending_details = pd.DataFrame(
-#         [vars(p) for p in pendings]
-#     ).set_index(['portfolio_id'])
-#     pending_account_details = pd.DataFrame(
-#         [vars(pos) for ap in pending_accounts for pos in ap]
-#     ).set_index(['portfolio_id'])
-
-#     pending_account_details['pending_id'] = pending_details['id']
-#     pending_account_details.reset_index(inplace=True)
-
-#     # check for positions being loaded that are not associated with any account in the trade
-#     pending_account_details.set_index(['broker_name', 'account_number'], inplace=True)
-#     new_position_details = pd.DataFrame(positions).groupby(
-#         ['broker_name', 'account_number', 'symbol']
-#     ).agg(lambda x: x.astype(float).sum()).reset_index()
-#     new_account_details = new_position_details.drop_duplicates(
-#         subset=['broker_name', 'account_number']
-#     ).set_index(['broker_name', 'account_number'])
-
-#     if any(pd.concat([pending_account_details, new_account_details], axis=1)['id'].isna()):
-#         current_app.logger.error('You have a position that is not associated with any account currently loaded in the trade.')
-#         return (None, None)
-
-#     pending_account_position_details = [vars(ap) for pending in pendings for ap in pending.account_positions]
-#     new_position_details.set_index(['broker_name', 'account_number'], inplace=True)
-#     new_position_details = new_position_details.join(
-#         pending_account_details, on=['broker_name', 'account_number']
-#     ).reset_index()
-
-#     return new_position_details, pending_account_position_details
-
-
-# def create_pending_account_positions(
-#     trade: Trade, new_positions: pd.DataFrame, pending_positions: pd.DataFrame
-# ):
-
-#     if len(pending_positions) == 0:
-#         additions = new_positions
-#     else:
-#         new_positions.set_index(['broker_name', 'account_number', 'symbol'], inplace=True)
-#         pending_account_position_details = pd.DataFrame(pending_positions).set_index(
-#             ['broker_name', 'account_number', 'symbol']
-#         )
-#         # with pd.option_context('display.max_rows', None, 'display.max_columns', None):
-#         #     print(additions, '\n', pending_account_position_details)
-#         new_positions['account_position_id'] = pending_account_position_details['id']
-#         # print(additions.loc[:,['id', 'account_id', 'account_position_id']])
-#         additions = new_positions[new_positions.loc[:, 'account_position_id'].isna()].reset_index()
-#     if not additions.empty:
-#         additions['position'] = additions.apply(
-#             lambda row: AccountPosition(
-#                 pending_id=row['pending_id'],
-#                 portfolio_id=row['portfolio_id'],
-#                 account_id=row['id'],
-#                 broker_name=row['broker_name'],
-#                 account_number=row['account_number'],
-#                 symbol=row['symbol'],
-#                 shares=row['shares']
-#             ),
-#             axis=1
-#         )
-
-#         db_session.bulk_save_objects(additions['position'].tolist())
-#         db_session.commit()
-
-#         additions['price'] = additions.apply(
-#             lambda row: Price(
-#                 account_position_id=additions['position'].id,
-#                 trade_id=trade.id,
-#                 symbol=row['symbol']
-#             ),
-#             axis=1
-#         )
-#         db_session.bulk_save_objects(additions['price'].tolist())
-#         db_session.commit()
-
-
-# def remove_pending_account_positions(new_positions, pending_positions):
-
-#     if len(pending_positions) == 0:
-#         return
-
-#     # new_positions.set_index(['broker_name', 'account_number', 'symbol'], inplace=True)
-#     pending_positions = pd.DataFrame(pending_positions).set_index(
-#         ['broker_name', 'account_number', 'symbol']
-#     )
-#     pending_positions['account_position_id'] = new_positions['id']
-#     deletions = pending_positions[pending_positions.loc[:, 'account_position_id'].isna()].reset_index()
-#     # with pd.option_context('display.max_rows', None, 'display.max_columns', None):
-#     #     print(deletions)
-#     if not deletions.empty:
-#         db_session.query(Price).filter(
-#             Price.account_position_id.in_(deletions['id'].tolist())
-#         ).delete(synchronize_session=False)
-#         db_session.query(AccountPosition).filter(
-#             AccountPosition.id.in_(deletions['id'].tolist())
-#         ).delete(synchronize_session=False)
-#         db_session.commit()

@@ -1,7 +1,7 @@
 from datetime import datetime
 from flask import current_app, g
 from libs.database import db_session
-from libs.database.trade import get_trade_prices, update_trade_prices, get_requests
+from libs.database.trade import get_trade_prices, update_trade_prices, get_trade_instructions
 from requests import HTTPError
 
 from ..account.models import AccountPosition
@@ -62,10 +62,10 @@ class TradeView:
 
         return {"result": "success"}
 
-    def get_instructions(self, body: dict) -> list:
+    def get_instructions(self, id) -> list:
         """Get instructions"""
-
-        return "Not implemented yet"
+        trade = self.__get_trade(id)
+        return get_trade_instructions(trade)
 
     def update_portfolios(self, id: int, body: dict) -> list:
         """Get portfolios for the trade"""
