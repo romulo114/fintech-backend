@@ -11,5 +11,5 @@ def trade(db_session, business):
 
 
 @fixture
-def trade_portfolios(db_session, trade):
+def trade_portfolios(db_session, trade_with_portfolios_accounts):
     pass

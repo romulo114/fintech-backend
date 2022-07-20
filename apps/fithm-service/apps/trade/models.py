@@ -35,7 +35,8 @@ class Trade(Base):
     @property
     def active_portfolios(self):
         portfolios = db_session.query(TradePortfolio).filter(
-            TradePortfolio.active == True
+            TradePortfolio.active == True,
+            TradePortfolio.trade_id == self.id,
         )
         return portfolios
 
@@ -57,8 +58,8 @@ class Trade(Base):
                 p.as_dict(include_account_positions=include_account_positions,
                           include_model_positions=include_model_positions) for p in self.portfolios
             ]
-            result["has_prices"] = all([p.has_prices for p in self.portfolios]),
-            result["has_cash_positions"] = all(p.has_cash_positions for p in self.portfolios)
+            result["has_prices"] = all([p.has_prices for p in self.active_portfolios]),
+            result["has_cash_positions"] = all(p.has_cash_positions for p in self.active_portfolios)
 
         return result
 

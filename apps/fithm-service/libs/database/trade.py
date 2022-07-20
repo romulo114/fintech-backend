@@ -56,12 +56,11 @@ def update_trade_prices(trade: Trade, prices = None):
     db_session.commit()
 
 
-def get_trade_instructions(trade: Trade, args: dict):
+def get_trade_instructions(trade: Trade):
 
-    return []
-    
     # get all symbols from all models in trade
-
+    print(trade.as_dict())
+    return
     positions = db_session.query(AccountPosition).filter(AccountPosition.pending_id.in_(pending_ids)).all()
     portfolios = trade.portfolios
 
