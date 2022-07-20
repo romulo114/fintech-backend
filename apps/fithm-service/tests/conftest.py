@@ -193,7 +193,7 @@ def portfolio_account_account_position(db_session, business):
 
 
 @pytest.fixture
-def trade_with_portfolios_accounts(db_session, business, portfolio):
+def trade(db_session, business, portfolio):
     from apps.trade.models import Trade, TradePortfolio
     trade = Trade(
         name="test_trade",
@@ -223,7 +223,7 @@ def trade_with_portfolios_accounts(db_session, business, portfolio_account_accou
         status='active',
     )
     db_session.add(trade)
-    db_session.commit()
+    db_session.flush()
     trade_portfolio = TradePortfolio(
         portfolio_id=portfolio_account_account_position.id,
         trade_id=trade.id,

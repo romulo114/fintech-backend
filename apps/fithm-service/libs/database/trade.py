@@ -57,13 +57,13 @@ def update_trade_prices(trade: Trade, prices = None):
 
 
 def get_trade_instructions(trade: Trade):
-
     # get all symbols from all models in trade
-    print(trade.as_dict())
-    return
-    positions = db_session.query(AccountPosition).filter(AccountPosition.pending_id.in_(pending_ids)).all()
-    portfolios = trade.portfolios
 
+    portfolios = trade.active_portfolios.all()
+
+    positions = [portfolio.get_account_positions() for portfolio in portfolios]
+    print(positions)
+    return
     if any([True if p.model_id is None else False for p in portfolios]):
         return ValueError('One of your portfolios has not been assigned a model.')
 

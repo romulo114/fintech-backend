@@ -124,5 +124,6 @@ class TradePortfolio(Base):
             "trade_id": self.trade_id,
             "portfolio": self.portfolio.as_dict(include_account_positions=include_account_positions,
                                                 include_model_positions=include_model_positions),
+            "active": self.active,
         }
         return result
