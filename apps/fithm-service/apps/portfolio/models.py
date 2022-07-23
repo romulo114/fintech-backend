@@ -20,28 +20,36 @@ class Portfolio(Stateful):
 
     @property
     def has_prices(self):
-        return all([all(
-            [account.has_prices for account in self.accounts]
-        ), self.model.has_prices])
+        return all(
+            [
+                all([account.has_prices for account in self.accounts]),
+                self.model.has_prices,
+            ]
+        )
 
     @property
     def has_cash_positions(self):
-        return all(
-            [account.has_cash_position for account in self.accounts]
-        )
+        return all([account.has_cash_position for account in self.accounts])
 
     def get_account_positions(self):
-        positions = []
+        positions = [["portfolio_id", "account_id", "symbol", "shares"]]
         for account in self.accounts:
             for account_position in account.account_positions:
-                positions.append(account_position.symbol)
+                positions.append(
+                    [
+                        self.id,
+                        account_position.account_id,
+                        account_position.symbol,
+                        account_position.shares,
+                    ]
+                )
+
         return positions
 
     def get_model_positions(self):
         positions = []
         for model_position in self.model_positions:
-            if not model_position.position_price.is_manual:
-                self.append(model_position.symbol)
+            self.append(model_position)
         return positions
 
     def as_dict(self, include_account_positions=False, include_model_positions=False):

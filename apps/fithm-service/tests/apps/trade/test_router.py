@@ -1,4 +1,4 @@
-def test_trade_collection_get(app, business):
+def test_trade_collection_get(app, business, trade):
     with app.test_client() as test_client:
         response = test_client.get(
             f"/api/v1/trades", query_string={"business_id": business.id}

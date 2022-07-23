@@ -11,6 +11,7 @@ import pandas as pd
 from iexfinance.stocks import Stock
 from datetime import datetime
 
+
 def get_trade_prices(trade: Trade, use: str = 'read'):
 
     prices = trade.prices
@@ -61,40 +62,19 @@ def get_trade_instructions(trade: Trade):
 
     portfolios = trade.active_portfolios.all()
 
-    positions = [portfolio.get_account_positions() for portfolio in portfolios]
-    print(positions)
-    return
+    account_position_headers, account_positions = trade.get_trade_positions()
     if any([True if p.model_id is None else False for p in portfolios]):
         return ValueError('One of your portfolios has not been assigned a model.')
-
-    models = [portfolio.model for portfolio in trade.portfolios]
     # add portfolio_id to each model position
-    for p in portfolios:
-        for m in models:
-            for a in m.allocation:
-                if p.model_id == m.id:
-                    a.portfolio_id = p.id
-    model_allocations = [m.allocation for m in models]
-    all_model_symbols = []
-    for allocation in model_allocations:
-        model_symbols = [m for m in allocation]
-        for m in model_symbols:
-            all_model_symbols.append(m)
+    model_position_headers, model_positions = trade.get_model_positions()
+    df_model_positions = pd.DataFrame(model_position_headers, model_positions).set_index(['portfolio_id'], inplace=True)
 
-    df_model_positions = pd.DataFrame([vars(m) for m in all_model_symbols])
-    df_model_positions.drop(['_sa_instance_state'], inplace=True, axis=1)
-    df_model_positions.set_index(['portfolio_id'])
-
-    df_account_positions = pd.DataFrame([vars(p) for p in positions])
-    df_account_positions.drop(['_sa_instance_state'], inplace=True, axis=1)
-    df_account_positions.set_index(['portfolio_id'])
+    df_account_positions = pd.DataFrame(account_positions, columns=account_position_headers).set_index(['portfolio_id'], inplace=True)
 
     df_all_positions = pd.concat([df_model_positions, df_account_positions])
     df_all_positions.set_index(['symbol'], inplace=True)
 
-    prices = trade.prices
-    df_prices = pd.DataFrame([vars(p) for p in prices]).drop_duplicates(subset=['symbol'])
-    df_prices.drop(['_sa_instance_state'], inplace=True, axis=1)
+    prices = trade.get_prices()
     df_prices.set_index(['symbol'], inplace=True)
 
     df_all_positions['price'] = df_prices['price']

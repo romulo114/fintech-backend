@@ -12,8 +12,8 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import relationship
-from libs.database import Base, Stateful
-from libs.database.sql_base import db_session
+from apps.portfolio.models import Portfolio
+from libs.database import Base, Stateful, db_session
 
 
 class Trade(Base):
@@ -34,9 +34,13 @@ class Trade(Base):
 
     @property
     def active_portfolios(self):
-        portfolios = db_session.query(TradePortfolio).filter(
-            TradePortfolio.active == True,
-            TradePortfolio.trade_id == self.id,
+        portfolios = (
+            db_session.query(Portfolio)
+            .join(TradePortfolio, Portfolio.id == TradePortfolio.portfolio_id)
+            .filter(
+                TradePortfolio.active == True,
+                TradePortfolio.trade_id == self.id,
+            )
         )
         return portfolios
 
@@ -51,23 +55,54 @@ class Trade(Base):
             "created": str(self.created),
             "status": str(self.status),
             "portfolios": [],
-
         }
         if self.portfolios:
             result["portfolios"] = [
-                p.as_dict(include_account_positions=include_account_positions,
-                          include_model_positions=include_model_positions) for p in self.portfolios
+                p.as_dict(
+                    include_account_positions=include_account_positions,
+                    include_model_positions=include_model_positions,
+                )
+                for p in self.portfolios
             ]
-            result["has_prices"] = all([p.has_prices for p in self.active_portfolios]),
-            result["has_cash_positions"] = all(p.has_cash_positions for p in self.active_portfolios)
+            result["has_prices"] = (
+                all([p.has_prices for p in self.active_portfolios]),
+            )
+            result["has_cash_positions"] = all(
+                p.has_cash_positions for p in self.active_portfolios
+            )
 
         return result
 
     def get_trade_positions(self):
         positions = []
+        position_headers = ["portfolio_id", "account_id", "symbol", "shares"]
         for portfolio in self.active_portfolios:
-            positions.extend(portfolio.get_account_positions)
-        return positions
+            for account in portfolio.accounts:
+                for account_position in account.account_positions:
+                    positions.append(
+                        [
+                            self.id,
+                            account_position.account_id,
+                            account_position.symbol,
+                            account_position.shares,
+                        ]
+                    )
+        return position_headers, positions
+
+    def get_model_positions(self):
+        positions = []
+        position_headers = ["portfolio_id", "model_id", "symbol", "weight"]
+        for portfolio in self.active_portfolios:
+            for model_position in portfolio.model.allocation:
+                positions.append(
+                    [
+                        self.id,
+                        model_position.model_id,
+                        model_position.symbol,
+                        model_position.wieght,
+                    ]
+                )
+        return position_headers, positions
 
     def get_unique_trade_positions(self):
         return set(self.get_trade_positions())
@@ -122,8 +157,10 @@ class TradePortfolio(Base):
         result = {
             "id": self.id,
             "trade_id": self.trade_id,
-            "portfolio": self.portfolio.as_dict(include_account_positions=include_account_positions,
-                                                include_model_positions=include_model_positions),
+            "portfolio": self.portfolio.as_dict(
+                include_account_positions=include_account_positions,
+                include_model_positions=include_model_positions,
+            ),
             "active": self.active,
         }
         return result

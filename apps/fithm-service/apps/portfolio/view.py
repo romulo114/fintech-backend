@@ -59,7 +59,6 @@ class PortfolioView:
         # pendings = portfolio.pendings
         # if len(pendings) > 0:
         #     helpers.update_trade_for_portfolio_account(portfolio, pendings)
-
         account_ids = body["accounts"]
         accounts = get_accounts(account_ids)
         for account in accounts:
