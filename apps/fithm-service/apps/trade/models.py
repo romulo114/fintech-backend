@@ -99,7 +99,7 @@ class Trade(Base):
                         self.id,
                         model_position.model_id,
                         model_position.symbol,
-                        model_position.wieght,
+                        model_position.weight,
                     ]
                 )
         return position_headers, positions
@@ -108,16 +108,14 @@ class Trade(Base):
         return set(self.get_trade_positions())
 
     def get_prices(self):
-        d = defaultdict(set)
-        for portfolio in self.portfolios:
+        price_headers = ["symbol", 'price']
+        symbols_prices = []
+        for portfolio in self.active_portfolios:
             for account in portfolio.accounts:
-                account_prices = account.get_prices()
-                for key, value in account_prices.items:
-                    d[key] = value
-            model_prices = portfolio.model.get_prices()
-            for key, value in model_prices:
-                d[key] = value
-        return d
+                symbols_prices.extend(account.get_prices())
+            symbols_prices.extend(portfolio.model.get_prices())
+
+        return price_headers, symbols_prices
         """
 
         :return: dict {symbol: price}

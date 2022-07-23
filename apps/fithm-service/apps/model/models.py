@@ -64,7 +64,7 @@ class Model(Stateful):
             {
                 model_position.model_position_price.model_price.symbol: model_position.model_position_price.model_price.price
             }
-            for model_position in self.model_positions
+            for model_position in self.allocation
         ]
 
 

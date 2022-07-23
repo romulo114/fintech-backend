@@ -71,9 +71,9 @@ class Account(Stateful):
 
     def get_prices(self):
         return [
-            {
-                account_position.account_position_price.account_price.symbol: account_position.account_position_price.account_price.price
-            }
+            [
+                account_position.account_position_price.account_price.symbol, account_position.account_position_price.account_price.price
+            ]
             for account_position in self.account_positions
         ]
 
