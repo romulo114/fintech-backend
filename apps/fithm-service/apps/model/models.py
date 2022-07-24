@@ -61,9 +61,9 @@ class Model(Stateful):
 
     def get_prices(self):
         return [
-            {
-                model_position.model_position_price.model_price.symbol: model_position.model_position_price.model_price.price
-            }
+            [
+                model_position.model_position_price.model_price.symbol, model_position.model_position_price.model_price.price
+            ]
             for model_position in self.allocation
         ]
 

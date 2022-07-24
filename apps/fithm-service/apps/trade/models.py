@@ -75,14 +75,15 @@ class Trade(Base):
 
     def get_trade_positions(self):
         positions = []
-        position_headers = ["portfolio_id", "account_id", "symbol", "shares"]
+        position_headers = ["trade_id", "portfolio_id", "account_number", "symbol", "shares"]
         for portfolio in self.active_portfolios:
             for account in portfolio.accounts:
                 for account_position in account.account_positions:
                     positions.append(
                         [
                             self.id,
-                            account_position.account_id,
+                            portfolio.id,
+                            account.account_number,
                             account_position.symbol,
                             account_position.shares,
                         ]
@@ -91,12 +92,13 @@ class Trade(Base):
 
     def get_model_positions(self):
         positions = []
-        position_headers = ["portfolio_id", "model_id", "symbol", "weight"]
+        position_headers = ["trade_id", "portfolio_id", "model_id", "symbol", "weight"]
         for portfolio in self.active_portfolios:
             for model_position in portfolio.model.allocation:
                 positions.append(
                     [
                         self.id,
+                        portfolio.id,
                         model_position.model_id,
                         model_position.symbol,
                         model_position.weight,

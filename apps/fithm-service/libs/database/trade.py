@@ -67,26 +67,22 @@ def get_trade_instructions(trade: Trade):
         return ValueError('One of your portfolios has not been assigned a model.')
     # add portfolio_id to each model position
     model_position_headers, model_positions = trade.get_model_positions()
-    df_model_positions = pd.DataFrame(model_positions, columns=model_position_headers).set_index(['portfolio_id'], inplace=True)
-
-    df_account_positions = pd.DataFrame(account_positions, columns=account_position_headers).set_index(['portfolio_id'], inplace=True)
-
-    # df_all_positions = pd.concat([df_model_positions, df_account_positions])
-    # df_all_positions.set_index(['symbol'], inplace=True)
-
+    df_model_positions = pd.DataFrame(model_positions, columns=model_position_headers)
+    df_model_positions.set_index(['portfolio_id'], inplace=True)
+    df_account_positions = pd.DataFrame(account_positions, columns=account_position_headers)
+    df_account_positions.set_index(['portfolio_id'], inplace=True)
+    df_all_positions = pd.concat([df_model_positions, df_account_positions])
+    df_all_positions.reset_index(inplace=True)
+    df_all_positions.set_index(['symbol'], inplace=True)
     price_headers, prices = trade.get_prices()
     df_prices = pd.DataFrame(prices, columns=price_headers)
-
-    #.drop_duplicates(inplace=True).set_index(["symbol"], inplace=True)
-    print(df_prices)
-    return
+    df_prices.drop_duplicates(inplace=True)
+    df_prices.set_index(["symbol"], inplace=True)
     df_all_positions['price'] = df_prices['price']
     df_all_positions['restrictions'] = float('NaN')
-    df_all_positions['trade_id'] = trade.id
     df_all_positions.rename(columns={'weight': 'model_weight'}, inplace=True)
     df_all_positions.reset_index(inplace=True)
-    df_all_positions.account_number.fillna('model', inplace=True)
-
+    print(df_all_positions)
     all_requests = []
     for i, port in df_all_positions.groupby('portfolio_id'):
         trade_request_obj = {'portfolio_id': i}

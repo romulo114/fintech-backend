@@ -32,13 +32,13 @@ class Portfolio(Stateful):
         return all([account.has_cash_position for account in self.accounts])
 
     def get_account_positions(self):
-        positions = [["portfolio_id", "account_id", "symbol", "shares"]]
+        positions = [["portfolio_id", "account_number", "symbol", "shares"]]
         for account in self.accounts:
             for account_position in account.account_positions:
                 positions.append(
                     [
                         self.id,
-                        account_position.account_id,
+                        account_position.account_number,
                         account_position.symbol,
                         account_position.shares,
                     ]
