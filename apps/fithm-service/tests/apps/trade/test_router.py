@@ -56,7 +56,8 @@ def test_trade_get_with_portfolio_account_account_position(app, business, trade,
 def test_trade_get_instructions(app, business, trade_with_portfolios_accounts):
     with app.test_client() as test_client:
         response = test_client.get(
-            f"/api/v1/trades/{trade_with_portfolios_accounts.id}/instructions", query_string={"business_id": business.id},
+            f"/api/v1/trades/{trade_with_portfolios_accounts.id}/instructions",
+            query_string={"business_id": business.id},
         )
     assert response.status_code == 200
 

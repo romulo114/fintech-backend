@@ -23,8 +23,7 @@ class TradeList(Resource):
 class TradeInstructions(Resource):
     @trade.doc("get instructions")
     def get(self, trade_id: int):
-
-        return view.get_instructions(trade_id)
+        return view.get_instructions(trade_id, request.args.get('send'))
 
 
 @trade.route("/<int:trade_id>")

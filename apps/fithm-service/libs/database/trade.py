@@ -57,7 +57,7 @@ def update_trade_prices(trade: Trade, prices = None):
     db_session.commit()
 
 
-def get_trade_instructions(trade: Trade):
+def get_trade_instructions(trade: Trade, send: bool = False):
     # get all symbols from all models in trade
 
     portfolios = trade.active_portfolios.all()
@@ -82,7 +82,6 @@ def get_trade_instructions(trade: Trade):
     df_all_positions['restrictions'] = float('NaN')
     df_all_positions.rename(columns={'weight': 'model_weight'}, inplace=True)
     df_all_positions.reset_index(inplace=True)
-    print(df_all_positions)
     all_requests = []
     for i, port in df_all_positions.groupby('portfolio_id'):
         trade_request_obj = {'portfolio_id': i}
@@ -90,7 +89,7 @@ def get_trade_instructions(trade: Trade):
             ['account_number', 'symbol', 'shares', 'model_weight', 'price', 'restrictions']
         ].to_dict('list')
         all_requests.append(trade_request_obj)
-    if 'send' in args:
+    if send:
         df_all_positions['archive'] = df_all_positions.apply(
             lambda row: TradeRequest(
                 created=datetime.utcnow(),
