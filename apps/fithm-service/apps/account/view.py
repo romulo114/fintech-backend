@@ -10,13 +10,16 @@ class AccountView:
     def __init__(self):
         pass
 
+
     def get_accounts(self):
         """Get all accounts owned by business"""
         business: Business = g.business
         accounts: List[Account] = business.accounts
+        current_app.logger.debug(accounts)
         return {
-            "accounts": [account.as_dict() for account in accounts if account.active]
+            "accounts": [account.as_dict(False) for account in accounts if account.active]
         }
+
 
     def create_account(self, body: dict) -> dict:
         """Create a new account for the business"""
@@ -47,6 +50,7 @@ class AccountView:
 
         return account.as_dict()
 
+
     def get_account(self, id: int):
         """Get account detail"""
 
@@ -55,6 +59,7 @@ class AccountView:
             abort(401, "Not active account")
 
         return account.as_dict()
+
 
     def update_account(self, id: int, body: dict) -> dict:
         """Update an existing account"""
@@ -68,6 +73,7 @@ class AccountView:
         db_session.commit()
         return account.as_dict()
 
+
     def delete_account(self, id: int):
         """
         Delete an account"""
@@ -77,6 +83,7 @@ class AccountView:
         db_session.commit()
 
         return {"result": "success"}
+
 
     def __get_account(self, id: int) -> Account:
 
@@ -93,12 +100,29 @@ class AccountPositionView:
     def __init__(self):
         pass
 
+
     def get_positions(self, id: int, args: dict = None) -> list:
         """Get positions for the account"""
 
         account_positions = self.__get_account_positions(id)
 
         return [position.as_dict() for position in account_positions]
+
+
+    def create_position(self, id: int, body: dict):
+        position = AccountPosition(
+            account_id=id,
+            symbol=body['symbol'],
+            shares=body['shares'],
+            is_cash=body['is_cash'],
+            price=[] if 'prices' in body else body['prices']
+        )
+
+        db_session.add(position)
+        db_session.commit()
+
+        return position.as_dict()
+
 
     def update_positions(self, id: int, body: dict) -> list:
         """Update positions for the account"""
@@ -160,6 +184,8 @@ class AccountPositionView:
 
         return [position.as_dict() for position in self.__get_account_positions(id)]
 
-    def __get_account_positions(self, id: int) -> AccountPosition:
 
-        return db_session.query(Account).get(id).account_positions
+    def __get_account_positions(self, id: int) -> list[AccountPosition]:
+
+        account: Account = db_session.query(Account).get(id)
+        return account.account_positions

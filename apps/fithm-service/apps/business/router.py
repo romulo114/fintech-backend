@@ -37,3 +37,11 @@ class Business(Resource):
     def delete(self, business_id: str):
 
         return view.delete_account(business_id)
+
+
+@business.route("/<int:business_id>/prices")
+class BusinessPrice(Resource):
+    @business.doc("get prices")
+    def get(self, business_id: str):
+
+        return view.get_

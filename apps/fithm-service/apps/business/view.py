@@ -1,12 +1,13 @@
 from typing import List
 from flask import current_app, g, abort
 from libs.database import db_session
-from .models import Business
+from .models import Business, BusinessPrice
 
 
 class BusinessView:
     def __init__(self):
         pass
+
 
     def get_businesses(self):
         """Get all businesses owned by user"""
@@ -18,6 +19,7 @@ class BusinessView:
                 business.as_dict() for business in businesses if business.active
             ]
         }
+
 
     def create_business(self, body: dict) -> dict:
         """Create a new business for the user"""
@@ -37,6 +39,7 @@ class BusinessView:
 
         return business.as_dict()
 
+
     def get_business(self, id: int):
         """Get business detail"""
 
@@ -45,6 +48,7 @@ class BusinessView:
         #     abort(401, 'Not active business')
 
         return business.as_dict()
+
 
     def update_business(self, id: int, body: dict) -> dict:
         """Update an existing business"""
@@ -58,6 +62,7 @@ class BusinessView:
         db_session.commit()
         return business.as_dict()
 
+
     def delete_business(self, id: int):
         """Delete an business"""
 
@@ -66,6 +71,16 @@ class BusinessView:
         db_session.commit()
 
         return {"result": "success"}
+
+
+    def get_business_prices(self, id: int):
+        """Get related prices"""
+
+        prices: list[BusinessPrice] = db_session.query(BusinessPrice).filter(BusinessPrice.business_id == id).all()
+        return [
+            price.as_dict() for price in prices
+        ]
+
 
     def __get_business(self, id: int) -> Business:
 

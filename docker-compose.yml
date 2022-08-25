@@ -12,6 +12,7 @@ services:
     command: bash -c "start.sh"
     depends_on:
       - database
+      - gateway
     restart: on-failure
     volumes:
       - ./apps/fithm-service/:/app/src/

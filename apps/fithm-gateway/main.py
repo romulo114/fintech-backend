@@ -32,3 +32,5 @@ def create_app():
     CORS(app)
     init_middlewares(app)
     return app
+
+app = create_app()
