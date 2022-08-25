@@ -38,9 +38,7 @@ class Account(Stateful):
             "has_cash_position": self.has_cash_position,
         }
         if include_account_positions:
-            result["account_positions"] = (
-                [position.as_dict() for position in self.account_positions],
-            )
+            result["account_positions"] = [position.as_dict() for position in self.account_positions]
         return result
 
     @property
@@ -49,7 +47,7 @@ class Account(Stateful):
             True
             if all(
                 [
-                    account_position.account_position_price.has_price
+                    account_position.account_position_price is not None
                     for account_position in self.account_positions
                 ]
             )
@@ -74,7 +72,7 @@ class Account(Stateful):
             [
                 account_position.account_position_price.account_price.symbol, account_position.account_position_price.account_price.price
             ]
-            for account_position in self.account_positions
+            for account_position in self.account_positions if account_position.price is not None
         ]
 
 
@@ -98,10 +96,10 @@ class AccountPosition(Stateful):
     def as_dict(self):
         return {
             "id": self.id,
-            "account_id": self.account_id,
             "symbol": self.symbol,
             "shares": str(self.shares),
-            "price": self.account_position_price.price.as_dict(),
+            "is_cash": self.is_cash,
+            "price": self.account_position_price.price.as_dict() if self.account_position_price else None,
         }
 
 

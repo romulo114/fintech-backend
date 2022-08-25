@@ -114,11 +114,15 @@ class AccountPositionView:
             account_id=id,
             symbol=body['symbol'],
             shares=body['shares'],
-            is_cash=body['is_cash'],
-            price=[] if 'prices' in body else body['prices']
+            is_cash=body['is_cash']
         )
 
         db_session.add(position)
+        if 'price' in body and body['price'] is not None:
+            current_app.logger.debug(f'price: {body["price"]}')
+            price = AccountPositionPrice(account_position=position, business_price_id=body['price'])
+            db_session.add(price)
+
         db_session.commit()
 
         return position.as_dict()
