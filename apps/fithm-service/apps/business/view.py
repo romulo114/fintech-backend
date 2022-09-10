@@ -22,7 +22,7 @@ class BusinessView:
         }
 
 
-    def create_business(self, body: dict) -> dict:
+    def create_business(self) -> dict:
         """Create a new business for the user"""
 
         # check existence
@@ -32,7 +32,7 @@ class BusinessView:
 
         # create an business
         business = Business(
-            id=g.business_id,
+            id=g.business_id
         )
 
         db_session.add(business)
@@ -61,10 +61,15 @@ class BusinessView:
         return {"result": "success"}
 
 
-    def get_business_prices(self, id: int):
+    def get_business_prices(self):
         """Get related prices"""
 
-        prices: list[BusinessPrice] = db_session.query(BusinessPrice).filter(BusinessPrice.business_id == id).all()
+        business_id = g.business.id
+        current_app.logger.info(f'business_id = {business_id}')
+        try:
+            prices: list[BusinessPrice] = db_session.query(BusinessPrice).filter(BusinessPrice.business_id == business_id).all()
+        except Exception:
+            prices: list[BusinessPrice] = []
         return [
             price.as_dict() for price in prices
         ]
@@ -78,6 +83,7 @@ class BusinessView:
         if symbol is None:
             abort(400, "symbol must be specified")
 
+        business_id = g.business.id
         business_price: BusinessPrice = BusinessPrice(
             business_id=business_id,
             symbol=symbol,
