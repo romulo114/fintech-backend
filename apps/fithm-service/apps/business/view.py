@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 from flask import current_app, g, abort
 from libs.database import db_session
@@ -80,6 +81,53 @@ class BusinessView:
         return [
             price.as_dict() for price in prices
         ]
+
+
+    def create_business_price(self, business_id: int, body: dict):
+        """Create a business price"""
+
+        symbol = body["symbol"] if "symbol" in body else None
+        price = body["price"] if "price" in body else 0
+        if symbol is None:
+            abort(400, "symbol must be specified")
+
+        business_price: BusinessPrice = BusinessPrice(
+            business_id=business_id,
+            symbol=symbol,
+            price=price,
+            updated=datetime.utcnow()
+        )
+
+        db_session.add(business_price)
+        db_session.commit()
+
+        return price()
+
+
+    def update_business_price(self, price_id: int, body: dict):
+        """Update an existing price"""
+
+        business_price: BusinessPrice = db_session.query(BusinessPrice).get(price_id)
+        if not business_price:
+            abort(404, "Business price not found")
+
+        if "symbol" in body:
+            business_price.symbol = body["symbol"]
+        if "price" in body:
+            business_price.price = body["price"]
+        db_session.commit()
+
+        return business_price.as_dict()
+
+
+    def delete_business_price(self, price_id):
+        """Delete an existing price"""
+
+        business_price = db_session.query(BusinessPrice).get(price_id)
+        db_session.delete(business_price)
+        db_session.commit()
+
+        return { "result": "success" }
 
 
     def __get_business(self, id: int) -> Business:

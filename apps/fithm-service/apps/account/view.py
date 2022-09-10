@@ -138,6 +138,9 @@ class AccountPositionView:
         ]
         remove_positions = filter(lambda id: id not in positions, current_positions)
         keep_positions = filter(lambda id: id in positions, current_positions)
+        current_app.logger.debug([pos.as_dict() for pos in current_positions])
+        current_app.logger.debug([pos for pos in new_positions])
+        current_app.logger.debug([pos for pos in positions])
         # todo update current positions shares if changed.
 
         for position in remove_positions:
