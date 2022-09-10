@@ -51,19 +51,6 @@ class BusinessView:
         return business.as_dict()
 
 
-    def update_business(self, id: int, body: dict) -> dict:
-        """Update an existing business"""
-
-        business = self.__get_business(id)
-        if "business_number" in body:
-            business.business_number = body["business_number"]
-        if "broker_name" in body:
-            business.broker_name = body["broker_name"]
-
-        db_session.commit()
-        return business.as_dict()
-
-
     def delete_business(self, id: int):
         """Delete an business"""
 

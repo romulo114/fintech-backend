@@ -1,10 +1,10 @@
 from flask_restx import Namespace, Resource
 from flask import request
-from .view import AccountView, AccountPositionView
+from .view import AccountView, AccountPositionsView
 
 account = Namespace("account", path="/accounts")
 view = AccountView()
-account_position_view = AccountPositionView()
+account_position_view = AccountPositionsView()
 
 
 @account.route("")
@@ -43,7 +43,7 @@ class Account(Resource):
 
 
 @account.route("/<int:account_id>/positions")
-class AccountPosition(Resource):
+class AccountPositions(Resource):
     @account.doc("get account positions")
     def get(self, account_id: int):
 
