@@ -61,7 +61,10 @@ class AccountPosition(Resource):
     @account.doc("create account position")
     def post(self, account_id: int):
 
-        return forward_request()
+        parser: AccountParser = container.get(AccountParser)
+        param = parser.parse_position_create(request)
+
+        return forward_request(body=param)
 
 
     @account.doc("update account positions")

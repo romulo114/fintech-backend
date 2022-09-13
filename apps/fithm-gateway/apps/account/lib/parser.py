@@ -8,6 +8,7 @@ class AccountParser:
     def __init__(self):
         self.create = None
         self.update = None
+        self.position = None
 
     def parse_create(self, req: Request) -> dict:
         if not self.create:
@@ -29,3 +30,13 @@ class AccountParser:
             self.update.add_argument("account_number", type=str, location="json")
 
         return self.update.parse_args(req)
+
+
+    def parse_position_create(self, req: Request) -> dict:
+        if not self.position:
+            self.position = reqparse.RequestParser()
+            self.update.add_argument("symbol", type=str, required=True, location="json")
+            self.update.add_argument("shares", type=float, required=True, location="json")
+            self.update.add_argument("is_cash", type=bool, required=True, location="json")
+
+        return self.position.parse_args(req)
