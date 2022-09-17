@@ -44,9 +44,9 @@ class BusinessPrices(Resource):
 
 
     @business.doc("create a business price")
-    def post(self, business_id: int):
+    def post(self):
 
-        return view.create_business_price(business_id, request.json)
+        return view.create_business_price(request.json)
 
 
 @business.route(("/prices/<int:business_price_id>"))

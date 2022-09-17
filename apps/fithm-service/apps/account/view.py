@@ -112,7 +112,7 @@ class AccountPositionsView:
     def create_position(self, account_id: int, body: dict):
         """Create a new position for the account"""
 
-        business_id = g.business_id
+        business_id = g.business.id
         account_position = AccountPosition(
             account_id=account_id,
             symbol=body['symbol'],
@@ -143,20 +143,27 @@ class AccountPositionsView:
         return position.as_dict() if position else None
 
 
-    def update_positions(self, id: int, positions: list[dict]) -> list:
+    def update_positions(self, id: int, body: dict) -> list:
         """Update positions for the account"""
 
-        business_id = g.business_id
+        if 'positions' not in body:
+            abort(400, "Bad request")
+ 
+        positions: list[dict] = body['positions']
+        business_id = body['business_id']
         current_positions: list[AccountPosition] = self.__get_account_positions(id)
         current_position_ids = [pos.id for pos in current_positions]
-        position_ids = [pos["id"] for pos in positions if id in pos]
-        new_positions = [pos for pos in positions if id not in pos]
 
-        remove_positions = [id for id in current_position_ids if id not in position_ids]
-        keep_positions = [pos for pos in current_positions if pos.id in position_ids]
-
+        keep_positions = [pos for pos in positions if "id" in pos]
+        keep_position_ids = [pos["id"] for pos in keep_positions]
+        original_positions = [pos for pos in current_positions if pos.id in keep_position_ids]
+        new_positions = [pos for pos in positions if "id" not in pos]
+        remove_positions = [id for id in current_position_ids if id not in keep_position_ids]
         positions_to_remove = [pos for pos in current_positions if pos.id in remove_positions]
+
         for pos in positions_to_remove:
+            if pos.account_position_price:
+                db_session.delete(pos.account_position_price)
             db_session.delete(pos)
 
         for pos in new_positions:
@@ -173,18 +180,20 @@ class AccountPositionsView:
                     account_position=account_position,
                     account_price=business_price,
                 )
+                db_session.add(account_position_price)
 
-            db_session.add(account_position_price)
             db_session.add(account_position)
 
-        for pos in keep_positions:
-            for updated in positions:
+        for pos in original_positions:
+            for updated in keep_positions:
                 if "id" not in updated or updated["id"] != pos.id:
                     continue
 
                 if "symbol" in updated and updated["symbol"] != pos.symbol:
                     pos.symbol = updated["symbol"]
                     business_price = self.__get_business_price(business_id, pos.symbol)
+                    if pos.account_position_price:
+                        db_session.delete(pos.account_position_price)
 
                     if business_price:
                         account_position_price = AccountPositionPrice(
@@ -212,7 +221,7 @@ class AccountPositionsView:
     def __get_business_price(self, business_id: int, symbol: str) -> Optional[BusinessPrice]:
 
         return db_session.query(BusinessPrice).filter(
-            BusinessPrice.id == business_id,
+            BusinessPrice.business_id == business_id,
             BusinessPrice.symbol == symbol,
         ).one_or_none()
         

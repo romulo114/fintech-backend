@@ -99,7 +99,7 @@ class AccountPosition(Stateful):
             "symbol": self.symbol,
             "shares": str(self.shares),
             "is_cash": self.is_cash,
-            "price": self.account_position_price.price.as_dict() if self.account_position_price else None,
+            "price": self.account_position_price.account_price.as_dict() if self.account_position_price else None,
         }
 
 

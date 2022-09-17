@@ -55,4 +55,4 @@ class BusinessPrice(Base):
     )
 
     def as_dict(self):
-        return {"id": self.id}
+        return { "id": self.id, "symbol": self.symbol, "price": self.price }

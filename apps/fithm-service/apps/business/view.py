@@ -75,7 +75,7 @@ class BusinessView:
         ]
 
 
-    def create_business_price(self, business_id: int, body: dict):
+    def create_business_price(self, body: dict):
         """Create a business price"""
 
         symbol = body["symbol"] if "symbol" in body else None
@@ -94,7 +94,7 @@ class BusinessView:
         db_session.add(business_price)
         db_session.commit()
 
-        return price()
+        return business_price.as_dict()
 
 
     def update_business_price(self, price_id: int, body: dict):
@@ -116,9 +116,15 @@ class BusinessView:
     def delete_business_price(self, price_id):
         """Delete an existing price"""
 
-        business_price = db_session.query(BusinessPrice).get(price_id)
-        db_session.delete(business_price)
-        db_session.commit()
+        business_price: BusinessPrice = db_session.query(BusinessPrice).get(price_id)
+        if business_price is not None:
+            account_position_prices = business_price.account_position_prices
+            if account_position_prices:
+                for price in account_position_prices:
+                    db_session.delete(price.account_position)
+                    db_session.delete(price)
+            db_session.delete(business_price)
+            db_session.commit()
 
         return { "result": "success" }
 
