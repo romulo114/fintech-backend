@@ -1,5 +1,5 @@
 import datetime
-from typing import List
+from typing import List, Optional
 from flask import current_app, g, abort
 from libs.database import db_session
 from .models import Account, AccountPosition, AccountPositionPrice
@@ -10,13 +10,16 @@ class AccountView:
     def __init__(self):
         pass
 
+
     def get_accounts(self):
         """Get all accounts owned by business"""
         business: Business = g.business
         accounts: List[Account] = business.accounts
+        current_app.logger.debug(accounts)
         return {
-            "accounts": [account.as_dict() for account in accounts if account.active]
+            "accounts": [account.as_dict(False) for account in accounts if account.active]
         }
+
 
     def create_account(self, body: dict) -> dict:
         """Create a new account for the business"""
@@ -47,6 +50,7 @@ class AccountView:
 
         return account.as_dict()
 
+
     def get_account(self, id: int):
         """Get account detail"""
 
@@ -55,6 +59,7 @@ class AccountView:
             abort(401, "Not active account")
 
         return account.as_dict()
+
 
     def update_account(self, id: int, body: dict) -> dict:
         """Update an existing account"""
@@ -68,6 +73,7 @@ class AccountView:
         db_session.commit()
         return account.as_dict()
 
+
     def delete_account(self, id: int):
         """
         Delete an account"""
@@ -77,6 +83,7 @@ class AccountView:
         db_session.commit()
 
         return {"result": "success"}
+
 
     def __get_account(self, id: int) -> Account:
 
@@ -89,77 +96,136 @@ class AccountView:
         return account
 
 
-class AccountPositionView:
+class AccountPositionsView:
     def __init__(self):
         pass
 
-    def get_positions(self, id: int, args: dict = None) -> list:
+
+    def get_positions(self, account_id: int) -> list:
         """Get positions for the account"""
 
-        account_positions = self.__get_account_positions(id)
+        account_positions = self.__get_account_positions(account_id)
 
         return [position.as_dict() for position in account_positions]
 
+
+    def create_position(self, account_id: int, body: dict):
+        """Create a new position for the account"""
+
+        business_id = g.business.id
+        account_position = AccountPosition(
+            account_id=account_id,
+            symbol=body['symbol'],
+            shares=body['shares'],
+            is_cash=body['is_cash']
+        )
+
+        business_price = self.__get_business_price(business_id, account_position.symbol)
+        if business_price:
+            account_position_price = AccountPositionPrice(
+                account_position=account_position,
+                account_price=business_price,
+            )
+            db_session.add(account_position_price)
+
+        db_session.add(account_position)
+        db_session.commit()
+
+        return account_position.as_dict()
+
+
+    def get_position(self, position_id: int) -> dict:
+
+        position: AccountPosition = self.__get_account_position(position_id)
+        if position is None:
+            abort(404, "account position not found")
+
+        return position.as_dict() if position else None
+
+
     def update_positions(self, id: int, body: dict) -> list:
         """Update positions for the account"""
-        business_id = body["business_id"]
-        positions = body["positions"]
-        current_positions: list[AccountPosition] = self.__get_account_positions(id)
-        new_positions = [
-            position for position in positions if "id" not in position.keys()
-        ]
-        remove_positions = filter(lambda id: id not in positions, current_positions)
-        keep_positions = filter(lambda id: id in positions, current_positions)
-        # todo update current positions shares if changed.
 
-        for position in remove_positions:
-            position.active = False
-            db_session.add(position)
-        new_items = [
-            AccountPosition(
+        if 'positions' not in body:
+            abort(400, "Bad request")
+ 
+        positions: list[dict] = body['positions']
+        business_id = body['business_id']
+        current_positions: list[AccountPosition] = self.__get_account_positions(id)
+        current_position_ids = [pos.id for pos in current_positions]
+
+        keep_positions = [pos for pos in positions if "id" in pos]
+        keep_position_ids = [pos["id"] for pos in keep_positions]
+        original_positions = [pos for pos in current_positions if pos.id in keep_position_ids]
+        new_positions = [pos for pos in positions if "id" not in pos]
+        remove_positions = [id for id in current_position_ids if id not in keep_position_ids]
+        positions_to_remove = [pos for pos in current_positions if pos.id in remove_positions]
+
+        for pos in positions_to_remove:
+            if pos.account_position_price:
+                db_session.delete(pos.account_position_price)
+            db_session.delete(pos)
+
+        for pos in new_positions:
+            account_position = AccountPosition(
                 account_id=id,
-                symbol=position["symbol"],
-                shares=position["shares"],
-                active=True,
+                symbol=pos["symbol"],
+                shares=pos["shares"],
+                is_cash=pos["is_cash"]
             )
-            for position in new_positions
-        ]
-        for account_position in new_items:
-            business_price = (
-                db_session.query(BusinessPrice)
-                .filter(
-                    BusinessPrice.id == business_id,
-                    BusinessPrice.symbol == account_position.symbol,
-                )
-                .one_or_none()
-            )
+
+            business_price = self.__get_business_price(business_id, account_position.symbol)
             if business_price:
-                db_session.add(
-                    AccountPositionPrice(
-                        account_position=account_position,
-                        price=business_price,
-                    )
+                account_position_price = AccountPositionPrice(
+                    account_position=account_position,
+                    account_price=business_price,
                 )
-            else:
-                new_business_price = BusinessPrice(
-                    business_id=business_id,
-                    symbol=account_position.symbol,
-                    updated=datetime.datetime.now(),
-                )
-                db_session.add(new_business_price)
-                db_session.flush()
-                db_session.add(
-                    AccountPositionPrice(
-                        account_position=account_position,
-                        business_price_id=new_business_price.id,
-                    )
-                )
-        db_session.add_all(new_items)
+                db_session.add(account_position_price)
+
+            db_session.add(account_position)
+
+        for pos in original_positions:
+            for updated in keep_positions:
+                if "id" not in updated or updated["id"] != pos.id:
+                    continue
+
+                if "symbol" in updated and updated["symbol"] != pos.symbol:
+                    pos.symbol = updated["symbol"]
+                    business_price = self.__get_business_price(business_id, pos.symbol)
+                    if pos.account_position_price:
+                        db_session.delete(pos.account_position_price)
+
+                    if business_price:
+                        account_position_price = AccountPositionPrice(
+                            account_position=pos,
+                            account_price=business_price,
+                        )
+                        db_session.add(account_position_price)
+
+                if "shares" in updated:
+                    pos.shares = updated["shares"]
+                if "is_cash" in updated:
+                    pos.is_cash = updated["is_cash"]
 
         db_session.commit()
 
         return [position.as_dict() for position in self.__get_account_positions(id)]
 
-    def __get_account_positions(self, id: int) -> AccountPosition:
 
-        return db_session.query(Account).get(id).account_positions
+    def __get_account_positions(self, id: int) -> list[AccountPosition]:
+
+        account: Account = db_session.query(Account).get(id)
+        return account.account_positions
+
+
+    def __get_business_price(self, business_id: int, symbol: str) -> Optional[BusinessPrice]:
+
+        return db_session.query(BusinessPrice).filter(
+            BusinessPrice.business_id == business_id,
+            BusinessPrice.symbol == symbol,
+        ).one_or_none()
+        
+
+    def __get_account_position(self, position_id: int) -> AccountPosition:
+
+        return db_session.query(AccountPosition).get(position_id)

@@ -48,3 +48,26 @@ class Account(Resource):
     def delete(self, account_id: str):
 
         return forward_request()
+
+
+@account.route("/<int:account_id>/positions")
+class AccountPosition(Resource):
+    @account.doc("get account positions")
+    def get(self, account_id: int):
+
+        return forward_request()
+
+
+    @account.doc("create account position")
+    def post(self, account_id: int):
+
+        parser: AccountParser = container.get(AccountParser)
+        param = parser.parse_position_create(request)
+
+        return forward_request(body=param)
+
+
+    @account.doc("update account positions")
+    def put(self, account_id: int):
+
+        return forward_request()

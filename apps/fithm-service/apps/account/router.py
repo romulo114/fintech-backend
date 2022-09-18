@@ -1,10 +1,10 @@
 from flask_restx import Namespace, Resource
 from flask import request
-from .view import AccountView, AccountPositionView
+from .view import AccountView, AccountPositionsView
 
 account = Namespace("account", path="/accounts")
 view = AccountView()
-account_position_view = AccountPositionView()
+account_position_view = AccountPositionsView()
 
 
 @account.route("")
@@ -29,10 +29,12 @@ class Account(Resource):
 
         return view.get_account(account_id)
 
+
     @account.doc("update account info")
     def put(self, account_id: str):
 
         return view.update_account(account_id, request.json)
+
 
     @account.doc("delete account")
     def delete(self, account_id: str):
@@ -41,11 +43,18 @@ class Account(Resource):
 
 
 @account.route("/<int:account_id>/positions")
-class AccountPosition(Resource):
+class AccountPositions(Resource):
     @account.doc("get account positions")
     def get(self, account_id: int):
 
         return account_position_view.get_positions(account_id)
+
+
+    @account.doc("create account positions")
+    def post(self, account_id: int):
+
+        return account_position_view.create_position(account_id, request.json)
+
 
     @account.doc("update account positions")
     def put(self, account_id: int):
