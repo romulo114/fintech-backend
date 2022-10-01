@@ -54,7 +54,7 @@ class Trade(Resource):
     def put(self, trade_id: int):
 
         parser: TradeParser = container.get(TradeParser)
-        body = parser.parse_update()
+        body = parser.parse_update(request)
 
         return forward_request(body=body)
 
@@ -62,7 +62,7 @@ class Trade(Resource):
 @trade.route("/<int:trade_id>/portfolios")
 class TradePortfolios(Resource):
     @trade.doc("add portfolios")
-    def post(self, trade_id: int):
+    def put(self, trade_id: int):
 
         parser: TradeParser = container.get(TradeParser)
         body = parser.parse_update_portfolios(request)

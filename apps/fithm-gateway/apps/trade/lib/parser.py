@@ -15,9 +15,7 @@ class TradeParser:
     def parse_update(self, req: Request) -> dict:
         if not self.update:
             self.update = reqparse.RequestParser()
-            self.update.add_argument(
-                "status", type=bool, required=True, location="json"
-            )
+            self.update.add_argument("status", type=str, required=True, location="json")
             self.update.add_argument("name", type=str, required=True, location="json")
 
         return self.update.parse_args(req)

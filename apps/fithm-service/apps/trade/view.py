@@ -148,7 +148,7 @@ class TradeView:
         """Get all requests for the trade"""
 
         trade = self.__get_trade(id)
-        return {"requests": get_requests(trade)}
+        return {"requests": get_trade_instructions(trade)}
 
     def __get_trade(self, id: int) -> Trade:
 

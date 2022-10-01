@@ -47,7 +47,7 @@ class Trade(Resource):
 @trade.route("/<int:trade_id>/portfolios")
 class TradePortfolios(Resource):
     @trade.doc("add portfolios")
-    def post(self, trade_id: int):
+    def put(self, trade_id: int):
 
         return view.update_portfolios(trade_id, request.json)
 

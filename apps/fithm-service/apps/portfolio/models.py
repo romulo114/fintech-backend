@@ -23,7 +23,7 @@ class Portfolio(Stateful):
         return all(
             [
                 all([account.has_prices for account in self.accounts]),
-                self.model.has_prices,
+                self.model and self.model.has_prices,
             ]
         )
 
