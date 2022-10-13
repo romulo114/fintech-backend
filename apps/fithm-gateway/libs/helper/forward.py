@@ -12,7 +12,7 @@ def forward_request(path: Optional[str] = None, body: Optional[Dict] = None, par
     if not body:
         body = request.json or {}
     if not params:
-        params = request.args or {}
+        params = { **request.args } if request.args else {}
     method = request.method
 
     if g.user and hasattr(g.user, 'id'):
