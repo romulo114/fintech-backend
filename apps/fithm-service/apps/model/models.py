@@ -79,6 +79,7 @@ class ModelPosition(Base):
 
     def as_dict(self):
         result = {
+            "id": self.id,
             "model_id": self.model_id,
             "symbol": self.symbol,
             "weight": self.weight,

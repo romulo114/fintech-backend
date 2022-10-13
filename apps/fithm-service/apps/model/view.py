@@ -1,4 +1,6 @@
+from typing import Union
 from flask import current_app, g, abort
+from psycopg2 import IntegrityError
 from libs.database import db_session
 from apps.models import Model, Business, ModelPosition
 
@@ -47,7 +49,7 @@ class ModelView:
         if not model.active:
             abort(401, "Not active model")
 
-        return model.as_dict()
+        return model.as_dict(True)
 
     def update_model(self, id: int, body: dict) -> dict:
         """Update a model with body"""
@@ -74,20 +76,36 @@ class ModelView:
 
     def update_model_position(self, id: int, body: dict) -> dict:
 
-        positions: list[ModelPosition] = []
-        for pos in body["positions"]:
-            positions.append(
-                ModelPosition(model_id=id, symbol=pos["symbol"], weight=pos["weight"])
-            )
-
         model = self.__get_model(id)
-        model.allocation = positions
+        positions: list[ModelPosition] = body["positions"]
+        ids = [pos["id"] for pos in positions if "id" in pos]
+        current_positions: list[ModelPosition] = model.allocation
+        positions_to_remove: list[ModelPosition] = filter(
+            lambda pos: pos.id not in ids, current_positions
+        )
+
+        for pos in positions:
+            old_position = None
+            if "id" in pos:
+                old_position = self.__find_position(pos["id"], current_positions)
+            if old_position:
+                old_position.symbol = pos["symbol"]
+                old_position.weight = pos["weight"]
+            else:
+                new_position = ModelPosition(model_id=id, symbol=pos["symbol"], weight=pos["weight"])
+                db_session.add(new_position)
+
+        remove_ids = [pos.id for pos in positions_to_remove]
+        db_session.query(ModelPosition).filter(
+            ModelPosition.id.in_(remove_ids)
+        ).delete(False)
+
         db_session.commit()
 
         # pendings: list[Pending] = model.pendings
         # helpers.update_trades_for_pendings(pendings)
 
-        return model.as_dict()
+        return model.as_dict(True)
 
     def public_models(self) -> list[Model]:
 
@@ -102,3 +120,9 @@ class ModelView:
             abort(403, "You don't have permission to this model.")
 
         return model
+
+
+    def __find_position(self, id: int, positions: list[ModelPosition]) -> Union[None, ModelPosition]:
+        for position in positions:
+            if position.id == id:
+                return position
