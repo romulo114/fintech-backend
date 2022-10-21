@@ -13,7 +13,7 @@ class Accounts(Resource):
     def get(self):
         """List all accounts"""
 
-        return view.get_accounts()
+        return view.get_accounts(request.args)
 
     @account.doc("create account")
     def post(self):

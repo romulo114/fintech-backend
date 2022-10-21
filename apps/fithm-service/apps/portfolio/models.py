@@ -20,12 +20,14 @@ class Portfolio(Stateful):
 
     @property
     def has_prices(self):
-        return all(
-            [
-                all([account.has_prices for account in self.accounts]),
-                self.model.has_prices,
-            ]
-        )
+        has_price = True
+        if self.accounts:
+            has_price = has_price and all([account.has_prices for account in self.accounts])
+        if self.model:
+            has_price = has_price and self.model.has_prices
+
+        return has_price
+
 
     @property
     def has_cash_positions(self):
