@@ -12,8 +12,10 @@ class PortfolioView:
         """Get all portfolios"""
 
         business: Business = g.business
+        portfolios: list[Portfolio] = business.portfolios
+        portfolios.sort(key=lambda item: item.id)
         return {
-            "portfolios": [portfolio.as_dict() for portfolio in business.portfolios]
+            "portfolios": [portfolio.as_dict() for portfolio in portfolios]
         }
 
     def create_portfolio(self, body: dict) -> dict:
@@ -55,14 +57,18 @@ class PortfolioView:
     def update_accounts(self, id: int, body: dict):
         """Get accounts connected to the porfolio"""
 
-        portfolio = self.__get_portfolio(id)
+        portfolio: Portfolio = self.__get_portfolio(id)
         # pendings = portfolio.pendings
         # if len(pendings) > 0:
         #     helpers.update_trade_for_portfolio_account(portfolio, pendings)
+        current_accounts: list[Account] = portfolio.accounts
         account_ids = body["accounts"]
         accounts = get_accounts(account_ids)
+        for account in current_accounts:
+            account.portfolio_id = None
         for account in accounts:
             account.portfolio_id = id
+
         db_session.commit()
 
         return portfolio.as_dict()
