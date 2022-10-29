@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 from typing import List, Optional
 from flask import current_app, g, abort
 from libs.database import db_session
@@ -149,63 +149,75 @@ class AccountPositionsView:
         if 'positions' not in body:
             abort(400, "Bad request")
  
+        current_app.logger.info('update_positions: ', body['positions'])
+        business_id = g.business.id
+
         positions: list[dict] = body['positions']
-        business_id = body['business_id']
         current_positions: list[AccountPosition] = self.__get_account_positions(id)
-        current_position_ids = [pos.id for pos in current_positions]
+        business_prices = self.__get_business_prices(business_id)
 
-        keep_positions = [pos for pos in positions if "id" in pos]
-        keep_position_ids = [pos["id"] for pos in keep_positions]
-        original_positions = [pos for pos in current_positions if pos.id in keep_position_ids]
-        new_positions = [pos for pos in positions if "id" not in pos]
-        remove_positions = [id for id in current_position_ids if id not in keep_position_ids]
-        positions_to_remove = [pos for pos in current_positions if pos.id in remove_positions]
+        for pos in positions:
+            new_price = pos["price"] if "price" in pos else None
+            if "id" not in pos: # new position
+                new_position = AccountPosition(
+                    account_id=id,
+                    symbol=pos["symbol"],
+                    shares=pos["shares"],
+                    is_cash=pos["is_cash"]
+                )
 
-        for pos in positions_to_remove:
+                price = self.__find_business_price(business_prices, new_position.symbol)
+                if not price:
+                    price = BusinessPrice(
+                        business_id=business_id,
+                        symbol=new_position.symbol,
+                        price=new_price
+                    )
+                    db_session.add(price)
+
+                account_position_price = AccountPositionPrice(
+                    account_position=new_position,
+                    account_price=price,
+                )
+
+                db_session.add(account_position_price)
+                db_session.add(new_position)
+            else: # old position
+                old_position = self.__find_account_position(current_positions, pos["id"])
+                if "shares" in pos:
+                    old_position.shares = pos["shares"]
+                if "is_cash" in pos:
+                    old_position.is_cash = pos["is_cash"]
+
+                old_position_price: AccountPositionPrice = old_position.account_position_price
+                if old_position.symbol == pos["symbol"]:
+                    if new_price:
+                        old_position_price.account_price.price = new_price
+                else:
+                    old_position.symbol = pos["symbol"]
+                    price = self.__find_business_price(business_prices, old_position.symbol)
+                    if not price:
+                        price = BusinessPrice(
+                            business_id=business_id,
+                            symbol=old_position.symbol,
+                            price=new_price
+                        )
+
+                        old_position_price.account_price = price
+                        db_session.add(price)
+                    else:
+                        price.price = new_price
+                        old_position_price.account_price = price
+
+        # remove positions
+        keep_position_ids = [pos["id"] for pos in positions if "id" in pos]
+        for pos in current_positions:
+            if pos.id in keep_position_ids:
+                continue
+
             if pos.account_position_price:
                 db_session.delete(pos.account_position_price)
             db_session.delete(pos)
-
-        for pos in new_positions:
-            account_position = AccountPosition(
-                account_id=id,
-                symbol=pos["symbol"],
-                shares=pos["shares"],
-                is_cash=pos["is_cash"]
-            )
-
-            business_price = self.__get_business_price(business_id, account_position.symbol)
-            if business_price:
-                account_position_price = AccountPositionPrice(
-                    account_position=account_position,
-                    account_price=business_price,
-                )
-                db_session.add(account_position_price)
-
-            db_session.add(account_position)
-
-        for pos in original_positions:
-            for updated in keep_positions:
-                if "id" not in updated or updated["id"] != pos.id:
-                    continue
-
-                if "symbol" in updated and updated["symbol"] != pos.symbol:
-                    pos.symbol = updated["symbol"]
-                    business_price = self.__get_business_price(business_id, pos.symbol)
-                    if pos.account_position_price:
-                        db_session.delete(pos.account_position_price)
-
-                    if business_price:
-                        account_position_price = AccountPositionPrice(
-                            account_position=pos,
-                            account_price=business_price,
-                        )
-                        db_session.add(account_position_price)
-
-                if "shares" in updated:
-                    pos.shares = updated["shares"]
-                if "is_cash" in updated:
-                    pos.is_cash = updated["is_cash"]
 
         db_session.commit()
 
@@ -218,14 +230,36 @@ class AccountPositionsView:
         return account.account_positions
 
 
+    def __get_business_prices(self, business_id: int) -> list[BusinessPrice]:
+        return db_session.query(BusinessPrice).filter(
+            BusinessPrice.business_id == business_id
+        ).all()
+
+
     def __get_business_price(self, business_id: int, symbol: str) -> Optional[BusinessPrice]:
 
         return db_session.query(BusinessPrice).filter(
             BusinessPrice.business_id == business_id,
-            BusinessPrice.symbol == symbol,
+            BusinessPrice.symbol == symbol
         ).one_or_none()
-        
+
+
+    def __find_business_price(self, prices: list[BusinessPrice], symbol: str) -> Optional[BusinessPrice]:
+        for price in prices:
+            if price.symbol == symbol:
+                return price
+
+        return None
+
 
     def __get_account_position(self, position_id: int) -> AccountPosition:
 
         return db_session.query(AccountPosition).get(position_id)
+
+
+    def __find_account_position(self, positions: list[AccountPosition], position_id: int) -> Optional[AccountPosition]:
+        for position in positions:
+            if position.id == position_id:
+                return position
+
+        return None

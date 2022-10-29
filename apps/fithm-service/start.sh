@@ -1,7 +1,6 @@
 #!/bin/bash
 
 cd /app/src
-echo $PWD
 export FLASK_APP=manage
 echo "Initializing database ..."
 flask db create

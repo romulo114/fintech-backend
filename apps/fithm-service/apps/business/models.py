@@ -1,3 +1,4 @@
+from datetime import datetime
 from sqlalchemy import (
     Column,
     String,
@@ -46,7 +47,7 @@ class BusinessPrice(Base):
     business_id = Column(Integer, ForeignKey("business.id"), nullable=False)
     symbol = Column(String, nullable=False)
     price = Column(Float)
-    updated = Column(DateTime, nullable=False)
+    updated = Column(DateTime, default=datetime.now(), nullable=False)
     account_position_prices = relationship(
         "AccountPositionPrice", back_populates="account_price"
     )
