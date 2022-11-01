@@ -1,8 +1,10 @@
 from datetime import datetime
 from typing import List, Optional
 from flask import current_app, g, abort
+from sqlalchemy import func
 from libs.database import db_session
 from .models import Account, AccountPosition, AccountPositionPrice
+from apps.model.models import ModelPosition
 from ..business.models import Business, BusinessPrice
 
 
@@ -166,14 +168,12 @@ class AccountPositionsView:
                     is_cash=pos["is_cash"]
                 )
 
-                price = self.__find_business_price(business_prices, new_position.symbol)
-                if not price:
-                    price = BusinessPrice(
-                        business_id=business_id,
-                        symbol=new_position.symbol,
-                        price=new_price
-                    )
-                    db_session.add(price)
+                price = self.__find_or_create_price(
+                    business_id,
+                    business_prices,
+                    new_position.symbol,
+                    new_price
+                )
 
                 account_position_price = AccountPositionPrice(
                     account_position=new_position,
@@ -195,19 +195,16 @@ class AccountPositionsView:
                         old_position_price.account_price.price = new_price
                 else:
                     old_position.symbol = pos["symbol"]
-                    price = self.__find_business_price(business_prices, old_position.symbol)
-                    if not price:
-                        price = BusinessPrice(
-                            business_id=business_id,
-                            symbol=old_position.symbol,
-                            price=new_price
-                        )
+                    price = self.__find_or_create_price(
+                        business_id,
+                        business_prices,
+                        old_position.symbol,
+                        new_price
+                    )
 
-                        old_position_price.account_price = price
-                        db_session.add(price)
-                    else:
+                    if new_price:
                         price.price = new_price
-                        old_position_price.account_price = price
+                    old_position_price.account_price = price
 
         # remove positions
         keep_position_ids = [pos["id"] for pos in positions if "id" in pos]
@@ -220,6 +217,9 @@ class AccountPositionsView:
             db_session.delete(pos)
 
         db_session.commit()
+
+        # remove free business prices
+        self.__remove_free_business_prices(business_id)
 
         return [position.as_dict() for position in self.__get_account_positions(id)]
 
@@ -263,3 +263,41 @@ class AccountPositionsView:
                 return position
 
         return None
+
+
+    def __find_or_create_price(
+        self,
+        business_id: int,
+        prices: list[BusinessPrice],
+        symbol: str,
+        new_price: Optional[float]
+    ) -> BusinessPrice:
+
+        price = self.__find_business_price(prices, symbol)
+
+        if not price:
+            if not new_price:
+                abort(400, "New symbol without price")
+
+            price = BusinessPrice(
+                business_id=business_id,
+                symbol=symbol,
+                price=new_price
+            )
+            db_session.add(price)
+
+        return price
+
+
+    def __remove_free_business_prices(self, business_id: int):
+        account_symbols = db_session.query(AccountPosition.symbol).all()
+        model_symbols = db_session.query(ModelPosition.symbol).all()
+        symbols = list(set([*account_symbols, *model_symbols]))
+        symbols = [sym[0] for sym in symbols]
+
+        db_session.query(BusinessPrice).filter(
+            BusinessPrice.business_id == business_id,
+            BusinessPrice.symbol.notin_(symbols)
+        ).delete()
+
+        db_session.commit()
