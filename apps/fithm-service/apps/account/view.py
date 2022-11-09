@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import List, Optional
+from libs.database.business import remove_free_business_prices
 from flask import current_app, g, abort
 from sqlalchemy import func
 from libs.database import db_session
@@ -151,7 +152,7 @@ class AccountPositionsView:
         if 'positions' not in body:
             abort(400, "Bad request")
  
-        current_app.logger.info('update_positions: ', body['positions'])
+        current_app.logger.info('Update account positions: ', body['positions'])
         business_id = g.business.id
 
         positions: list[dict] = body['positions']
@@ -175,12 +176,14 @@ class AccountPositionsView:
                     new_price
                 )
 
-                account_position_price = AccountPositionPrice(
-                    account_position=new_position,
-                    account_price=price,
-                )
+                if price:
+                    account_position_price = AccountPositionPrice(
+                        account_position=new_position,
+                        account_price=price,
+                    )
 
-                db_session.add(account_position_price)
+                    db_session.add(account_position_price)
+
                 db_session.add(new_position)
             else: # old position
                 old_position = self.__find_account_position(current_positions, pos["id"])
@@ -202,8 +205,6 @@ class AccountPositionsView:
                         new_price
                     )
 
-                    if new_price:
-                        price.price = new_price
                     old_position_price.account_price = price
 
         # remove positions
@@ -219,7 +220,7 @@ class AccountPositionsView:
         db_session.commit()
 
         # remove free business prices
-        self.__remove_free_business_prices(business_id)
+        remove_free_business_prices(business_id)
 
         return [position.as_dict() for position in self.__get_account_positions(id)]
 
@@ -277,7 +278,7 @@ class AccountPositionsView:
 
         if not price:
             if not new_price:
-                abort(400, "New symbol without price")
+                return None
 
             price = BusinessPrice(
                 business_id=business_id,
@@ -285,19 +286,7 @@ class AccountPositionsView:
                 price=new_price
             )
             db_session.add(price)
+        elif new_price:
+            price.price = new_price
 
         return price
-
-
-    def __remove_free_business_prices(self, business_id: int):
-        account_symbols = db_session.query(AccountPosition.symbol).all()
-        model_symbols = db_session.query(ModelPosition.symbol).all()
-        symbols = list(set([*account_symbols, *model_symbols]))
-        symbols = [sym[0] for sym in symbols]
-
-        db_session.query(BusinessPrice).filter(
-            BusinessPrice.business_id == business_id,
-            BusinessPrice.symbol.notin_(symbols)
-        ).delete()
-
-        db_session.commit()
