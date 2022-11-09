@@ -14,11 +14,17 @@ class AccountView:
         pass
 
 
-    def get_accounts(self):
+    def get_accounts(self, params):
         """Get all accounts owned by business"""
         business: Business = g.business
+        free = None
+        if 'free' in params:
+            free = params['free']
+
+        current_app.logger.debug(free)
         accounts: List[Account] = business.accounts
-        current_app.logger.debug(accounts)
+        if free == 'portfolio':
+            accounts = [acc for acc in accounts if acc.portfolio_id is None]
         return {
             "accounts": [account.as_dict(False) for account in accounts if account.active]
         }
