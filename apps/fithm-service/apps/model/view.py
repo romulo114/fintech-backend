@@ -1,8 +1,11 @@
-from typing import Union
+from typing import Optional, Union
+
+from libs.database.business import remove_free_business_prices
+from apps.model.models import ModelPositionPrice, ModelPosition
+from apps.business.models import BusinessPrice
 from flask import current_app, g, abort
-from psycopg2 import IntegrityError
 from libs.database import db_session
-from apps.models import Model, Business, ModelPosition
+from apps.models import Model, Business
 
 # from libs.database import helpers
 
@@ -75,37 +78,81 @@ class ModelView:
         return {"result": "success"}
 
     def update_model_position(self, id: int, body: dict) -> dict:
+        """Update positions for the model"""
+
+        if 'positions' not in body:
+            abort(400, "Bad request")
+ 
+        current_app.logger.info('Update model positions: ', body['positions'])
+        business_id = g.business.id
 
         model = self.__get_model(id)
-        positions: list[ModelPosition] = body["positions"]
-        ids = [pos["id"] for pos in positions if "id" in pos]
+        positions: list[dict] = body['positions']
         current_positions: list[ModelPosition] = model.allocation
-        positions_to_remove: list[ModelPosition] = filter(
-            lambda pos: pos.id not in ids, current_positions
-        )
+        business_prices = self.__get_business_prices(business_id)
 
         for pos in positions:
-            old_position = None
-            if "id" in pos:
-                old_position = self.__find_position(pos["id"], current_positions)
-            if old_position:
-                old_position.symbol = pos["symbol"]
-                old_position.weight = pos["weight"]
-            else:
-                new_position = ModelPosition(model_id=id, symbol=pos["symbol"], weight=pos["weight"])
-                db_session.add(new_position)
+            new_price = pos["price"] if "price" in pos else None
+            if "id" not in pos: # new position
+                new_position = ModelPosition(
+                    model_id=id,
+                    symbol=pos["symbol"],
+                    weight=pos["weight"]
+                )
 
-        remove_ids = [pos.id for pos in positions_to_remove]
-        db_session.query(ModelPosition).filter(
-            ModelPosition.id.in_(remove_ids)
-        ).delete(False)
+                price = self.__find_or_create_price(
+                    business_id,
+                    business_prices,
+                    new_position.symbol,
+                    new_price
+                )
+
+                if price:
+                    model_position_price = ModelPositionPrice(
+                        model_position=new_position,
+                        model_price=price,
+                    )
+
+                    db_session.add(model_position_price)
+
+                db_session.add(new_position)
+            else: # old position
+                old_position = self.__find_model_position(current_positions, pos["id"])
+                if "weight" in pos:
+                    old_position.weight = pos["weight"]
+
+                old_position_price: ModelPositionPrice = old_position.model_position_price
+                if old_position.symbol == pos["symbol"]:
+                    if new_price:
+                        old_position_price.model_price.price = new_price
+                else:
+                    old_position.symbol = pos["symbol"]
+                    price = self.__find_or_create_price(
+                        business_id,
+                        business_prices,
+                        old_position.symbol,
+                        new_price
+                    )
+
+                    old_position_price.model_prices = price
+
+        # remove positions
+        keep_position_ids = [pos["id"] for pos in positions if "id" in pos]
+        for pos in current_positions:
+            if pos.id in keep_position_ids:
+                continue
+
+            if pos.model_position_price:
+                db_session.delete(pos.model_position_price)
+            db_session.delete(pos)
 
         db_session.commit()
 
-        # pendings: list[Pending] = model.pendings
-        # helpers.update_trades_for_pendings(pendings)
+        # remove free business prices
+        remove_free_business_prices(business_id)
 
         return model.as_dict(True)
+
 
     def public_models(self) -> list[Model]:
 
@@ -122,7 +169,49 @@ class ModelView:
         return model
 
 
-    def __find_position(self, id: int, positions: list[ModelPosition]) -> Union[None, ModelPosition]:
+    def __find_model_position(self, positions: list[ModelPosition], position_id: int) -> Optional[ModelPosition]:
         for position in positions:
-            if position.id == id:
+            if position.id == position_id:
                 return position
+
+        return None
+
+
+    def __get_business_prices(self, business_id: int) -> list[BusinessPrice]:
+        return db_session.query(BusinessPrice).filter(
+            BusinessPrice.business_id == business_id
+        ).all()
+
+
+    def __find_business_price(self, prices: list[BusinessPrice], symbol: str) -> Optional[BusinessPrice]:
+        for price in prices:
+            if price.symbol == symbol:
+                return price
+
+        return None
+
+
+    def __find_or_create_price(
+        self,
+        business_id: int,
+        prices: list[BusinessPrice],
+        symbol: str,
+        new_price: Optional[float]
+    ) -> BusinessPrice:
+
+        price = self.__find_business_price(prices, symbol)
+
+        if not price:
+            if not new_price:
+                return None
+
+            price = BusinessPrice(
+                business_id=business_id,
+                symbol=symbol,
+                price=new_price
+            )
+            db_session.add(price)
+        elif new_price:
+            price.price = new_price
+
+        return price

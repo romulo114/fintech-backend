@@ -83,6 +83,7 @@ class ModelPosition(Base):
             "model_id": self.model_id,
             "symbol": self.symbol,
             "weight": self.weight,
+            "price": self.model_position_price.model_price.as_dict() if self.model_position_price else None,
         }
         return result
 
