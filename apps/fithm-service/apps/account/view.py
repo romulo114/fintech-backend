@@ -88,6 +88,9 @@ class AccountView:
         Delete an account"""
 
         account = self.__get_account(id)
+        for position in account.account_positions:
+            if position.account_position_price:
+                db_session.delete(position.account_position_price)
         db_session.delete(account)
         db_session.commit()
 
@@ -158,7 +161,7 @@ class AccountPositionsView:
         if 'positions' not in body:
             abort(400, "Bad request")
  
-        current_app.logger.info('Update account positions: ', body['positions'])
+        current_app.logger.info(f'Update account positions: {body["positions"]}')
         business_id = g.business.id
 
         positions: list[dict] = body['positions']
@@ -199,19 +202,26 @@ class AccountPositionsView:
                     old_position.is_cash = pos["is_cash"]
 
                 old_position_price: AccountPositionPrice = old_position.account_position_price
-                if old_position.symbol == pos["symbol"]:
-                    if new_price:
-                        old_position_price.account_price.price = new_price
-                else:
-                    old_position.symbol = pos["symbol"]
-                    price = self.__find_or_create_price(
-                        business_id,
-                        business_prices,
-                        old_position.symbol,
-                        new_price
-                    )
+                old_position.symbol = pos["symbol"]
+                price = self.__find_or_create_price(
+                    business_id,
+                    business_prices,
+                    pos["symbol"],
+                    new_price
+                )
+
+                if price:
+                    if not old_position_price:
+                        old_position_price = AccountPositionPrice(
+                            account_position=old_position,
+                            account_price=price,
+                        )
+                        db_session.add(old_position_price)
 
                     old_position_price.account_price = price
+                else:
+                    if old_position_price:
+                        db_session.delete(old_position_price)
 
         # remove positions
         keep_position_ids = [pos["id"] for pos in positions if "id" in pos]
