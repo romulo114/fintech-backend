@@ -71,6 +71,9 @@ class ModelView:
         """Delete a model"""
 
         model = self.__get_model(id)
+        for position in model.allocation:
+            if position.model_position_price:
+                db_session.delete(position.model_position_price)
         db_session.delete(model)
         db_session.commit()
         # helpers.update_trades_for_pendings(pendings)
@@ -83,7 +86,7 @@ class ModelView:
         if 'positions' not in body:
             abort(400, "Bad request")
  
-        current_app.logger.info('Update model positions: ', body['positions'])
+        current_app.logger.info(f'Update model positions: {body["positions"]}')
         business_id = g.business.id
 
         model = self.__get_model(id)
@@ -122,19 +125,26 @@ class ModelView:
                     old_position.weight = pos["weight"]
 
                 old_position_price: ModelPositionPrice = old_position.model_position_price
-                if old_position.symbol == pos["symbol"]:
-                    if new_price:
-                        old_position_price.model_price.price = new_price
-                else:
-                    old_position.symbol = pos["symbol"]
-                    price = self.__find_or_create_price(
-                        business_id,
-                        business_prices,
-                        old_position.symbol,
-                        new_price
-                    )
+                old_position.symbol = pos["symbol"]
+                price = self.__find_or_create_price(
+                    business_id,
+                    business_prices,
+                    old_position.symbol,
+                    new_price
+                )
 
-                    old_position_price.model_prices = price
+                if price:
+                    if not old_position_price:
+                        old_position_price = ModelPositionPrice(
+                            model_position=old_position,
+                            model_price=price,
+                        )
+                        db_session.add(old_position_price)
+
+                    old_position_price.model_price = price
+                else:
+                    if old_position_price:
+                        db_session.delete(old_position_price)
 
         # remove positions
         keep_position_ids = [pos["id"] for pos in positions if "id" in pos]
