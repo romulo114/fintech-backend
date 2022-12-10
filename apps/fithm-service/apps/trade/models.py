@@ -57,13 +57,16 @@ class Trade(Base):
             "portfolios": [],
         }
         if self.portfolios:
-            result["portfolios"] = [
+            portfolios = [
                 p.as_dict(
                     include_account_positions=include_account_positions,
                     include_model_positions=include_model_positions,
                 )
                 for p in self.portfolios
             ]
+            portfolios.sort(key=lambda item: item['id'], reverse=True)
+            result["portfolios"] = portfolios
+
             result["has_prices"] = (
                 all([p.has_prices for p in self.active_portfolios]),
             )

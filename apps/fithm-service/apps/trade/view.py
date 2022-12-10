@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import current_app, g
+from flask import abort, current_app, g
 from libs.database import db_session
 from libs.database.trade import get_trade_prices, update_trade_prices, get_trade_instructions
 from requests import HTTPError
@@ -72,23 +72,43 @@ class TradeView:
 
         trade = self.__get_trade(id)
         if trade.status != "active":
-            raise HTTPError("")
+            abort(400, "Not active model")
+
         portfolios = body["portfolios"]
-        current_portfolios = [p.id for p in trade.active_portfolios or []]
-        new_portfolios = filter(lambda id: id not in current_portfolios, portfolios)
-        # Todo validate the portfolio has a model
-        rem_portfolios = filter(lambda id: id not in portfolios, current_portfolios)
+        current_portfolios = [p.portfolio_id for p in trade.portfolios or []]
+        new_portfolios = [id for id in portfolios if id not in current_portfolios]
+
+        portfolios_to_remove = [id for id in current_portfolios if id not in portfolios]
+
         # Todo update to not delete tradeportfolio and instead mark as "inactive"
         db_session.query(TradePortfolio).filter(
-            TradePortfolio.id.in_(rem_portfolios)
+            TradePortfolio.portfolio_id.in_(portfolios_to_remove),
+            TradePortfolio.trade_id == id
         ).delete(False)
+
         new_items = [
             TradePortfolio(trade_id=id, portfolio_id=port_id, active=True)
             for port_id in new_portfolios
         ]
         db_session.add_all(new_items)
+
         db_session.commit()
         return self.__get_trade(id).as_dict()
+
+
+    def update_portfolio(self, trade_id: int, portfolio_id: int, body: dict) -> None:
+        active = body['active']
+        trade_portfolio: TradePortfolio = db_session.query(TradePortfolio).filter(
+            TradePortfolio.portfolio_id == portfolio_id,
+            TradePortfolio.trade_id == trade_id
+        ).one_or_none()
+
+        if not trade_portfolio:
+            abort(404, 'Trade portfolio not found')
+
+        trade_portfolio.active = active
+        db_session.commit()
+
 
     def get_positions(self, id: int, args: dict) -> list:
         """Get positions for the trade"""
@@ -108,6 +128,7 @@ class TradeView:
 
         return [position.as_dict() for position in positions]
 
+
     def update_positions(self, id: int, body: dict) -> dict:
         """Update positions for the trade"""
 
@@ -118,6 +139,7 @@ class TradeView:
 
         return self.__get_trade(id).as_dict()
 
+
     def get_prices(self, id: int) -> list:
         """Get prices for the trade"""
 
@@ -127,6 +149,7 @@ class TradeView:
             return []
         else:
             return [p.as_dict() for p in prices["price_object"]]
+
 
     def update_prices(self, id: int, body: dict) -> dict:
         """Update prices for the trade"""
@@ -144,11 +167,13 @@ class TradeView:
         else:
             return self.__get_trade(id).as_dict()
 
+
     def get_requests(self, id: int) -> list:
         """Get all requests for the trade"""
 
         trade = self.__get_trade(id)
         return {"requests": get_trade_instructions(trade)}
+
 
     def __get_trade(self, id: int) -> Trade:
 

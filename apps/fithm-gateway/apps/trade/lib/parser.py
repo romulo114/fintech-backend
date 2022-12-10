@@ -8,9 +8,11 @@ class TradeParser:
         self.update = None
         self.instructions = None
         self.update_portfolios = None
+        self.update_portfolio = None
         self.get_positions = None
         self.update_positions = None
         self.update_prices = None
+
 
     def parse_update(self, req: Request) -> dict:
         if not self.update:
@@ -20,12 +22,14 @@ class TradeParser:
 
         return self.update.parse_args(req)
 
+
     def parse_create(self, req: Request) -> dict:
         if not self.create:
             self.create = reqparse.RequestParser()
             self.create.add_argument("name", type=str, required=True, location="json")
 
         return self.create.parse_args(req)
+
 
     def parse_instructions(self, req: Request) -> dict:
         if not self.instructions:
@@ -36,6 +40,7 @@ class TradeParser:
 
         return self.instructions.parse_args(req)
 
+
     def parse_update_portfolios(self, req: Request) -> dict:
         if not self.update_portfolios:
             self.update_portfolios = reqparse.RequestParser()
@@ -45,12 +50,24 @@ class TradeParser:
 
         return self.update_portfolios.parse_args(req)
 
+
+    def parse_update_portfolio(self, req: Request) -> dict:
+        if not self.update_portfolio:
+            self.update_portfolio = reqparse.RequestParser()
+            self.update_portfolio.add_argument(
+                'active', type=bool, required=True, location='json'
+            )
+
+        return self.update_portfolio.parse_args(req)
+
+
     def parse_get_positions(self, req: Request) -> dict:
         if not self.get_positions:
             self.get_positions = reqparse.RequestParser()
             self.get_positions.add_argument("portfolio_id", type=int, location="args")
 
         return self.get_positions.parse_args(req)
+
 
     def parse_update_positions(self, req: Request) -> dict:
         if not self.update_positions:
@@ -60,6 +77,7 @@ class TradeParser:
             )
 
         return self.update_positions.parse_args(req)
+
 
     def parse_update_prices(self, req: Request) -> dict:
         if not self.update_prices:

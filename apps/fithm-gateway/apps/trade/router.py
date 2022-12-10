@@ -70,6 +70,17 @@ class TradePortfolios(Resource):
         return forward_request(body=body)
 
 
+@trade.route("/<int:trade_id>/portfolios/<int:portfolio_id>")
+class TradePortfolio(Resource):
+    @trade.doc("update portfolio")
+    def put(self, trade_id: int, portfolio_id: int):
+
+        parser: TradeParser = container.get(TradeParser)
+        body = parser.parse_update_portfolio(request)
+
+        return forward_request(body=body)
+
+
 @trade.route("/<int:trade_id>/positions")
 class TradePositions(Resource):
     @trade.doc("get positions")
