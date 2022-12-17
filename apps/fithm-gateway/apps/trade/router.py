@@ -38,6 +38,14 @@ class TradeInstructions(Resource):
         return forward_request(body=body)
 
 
+@trade.route("/portfolios")
+class TradePortfolios(Resource):
+    @trade.doc("get active portfolios")
+    def get(self):
+
+        return forward_request()
+
+
 @trade.route("/<int:trade_id>")
 class Trade(Resource):
     @trade.doc("get trade")

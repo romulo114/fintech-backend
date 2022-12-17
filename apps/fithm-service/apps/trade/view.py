@@ -62,10 +62,20 @@ class TradeView:
 
         return {"result": "success"}
 
+
     def get_instructions(self, id: int, send: bool = False ) -> list:
         """Get instructions"""
         trade = self.__get_trade(id)
         return get_trade_instructions(trade, send)
+
+
+    def get_active_portfolios(self) -> list:
+        portfolios = db_session.query(TradePortfolio).filter(
+            TradePortfolio.active == True
+        ).all()
+
+        return [p.portfolio_id for p in portfolios]
+
 
     def update_portfolios(self, id: int, body: dict) -> list:
         """Get portfolios for the trade"""

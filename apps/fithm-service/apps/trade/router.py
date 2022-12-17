@@ -19,6 +19,14 @@ class TradeList(Resource):
         return view.create_trade(request.json)
 
 
+@trade.route("/portfolios")
+class TradePortfolios(Resource):
+    @trade.doc("get active portfolios")
+    def get(self):
+
+        return view.get_active_portfolios()
+
+
 @trade.route("/<int:trade_id>/instructions")
 class TradeInstructions(Resource):
     @trade.doc("get instructions")
@@ -50,6 +58,11 @@ class TradePortfolios(Resource):
     def put(self, trade_id: int):
 
         return view.update_portfolios(trade_id, request.json)
+
+    @trade.doc("get all active portfolios")
+    def get(self, trade_id: int):
+        
+        return view.get_active_portfolios(trade_id)
 
 
 @trade.route("/<int:trade_id>/portfolios/<int:portfolio_id>")
