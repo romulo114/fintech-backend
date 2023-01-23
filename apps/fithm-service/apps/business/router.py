@@ -18,22 +18,47 @@ class Businesses(Resource):
     def post(self):
         """Create a business for a user"""
 
-        return view.create_business(request.json)
+        return view.create_business()
 
 
 @business.route("/<int:business_id>")
 class Business(Resource):
     @business.doc("get business info")
-    def get(self, business_id: str):
+    def get(self, business_id: int):
 
         return view.get_business(business_id)
 
-    @business.doc("update business info")
-    def put(self, business_id: str):
-
-        return view.update_business(business_id, request.json)
 
     @business.doc("delete business")
-    def delete(self, business_id: str):
+    def delete(self, business_id: int):
 
-        return view.delete_account(business_id)
+        return view.delete_business(business_id)
+
+
+@business.route("/prices")
+class BusinessPrices(Resource):
+    @business.doc("get prices")
+    def get(self):
+
+        return view.get_business_prices()
+
+
+    @business.doc("create a business price")
+    def post(self):
+
+        return view.create_business_price(request.json)
+
+
+@business.route(("/prices/<int:business_price_id>"))
+class BusinessPrice(Resource):
+
+    @business.doc("update an existing business price")
+    def put(self, business_price_id: int):
+
+        return view.update_business_price(business_price_id, request.json)
+
+
+    @business.doc("delete an existing business price")
+    def delete(self, business_price_id: int):
+        
+        return view.delete_business_price(business_price_id)

@@ -48,16 +48,11 @@ class Model(Stateful):
 
     @property
     def has_prices(self):
-        return (
-            True
-            if all(
-                [
-                    model_position.model_position_price.has_price
-                    for model_position in self.allocation
-                ]
-            )
-            else False
-        )
+        if self.allocation:
+            for model_position in self.allocation:
+                if not model_position.model_position_price or model_position.model_position_price.has_price:
+                    return False
+        return False
 
     def get_prices(self):
         return [
@@ -84,9 +79,11 @@ class ModelPosition(Base):
 
     def as_dict(self):
         result = {
+            "id": self.id,
             "model_id": self.model_id,
             "symbol": self.symbol,
             "weight": self.weight,
+            "price": self.model_position_price.model_price.as_dict() if self.model_position_price else None,
         }
         return result
 

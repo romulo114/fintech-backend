@@ -1,4 +1,6 @@
+from datetime import datetime
 from sqlalchemy import (
+    CheckConstraint,
     Column,
     String,
     ForeignKey,
@@ -40,13 +42,14 @@ class BusinessPrice(Base):
     __tablename__ = "business_price"
     __table_args__ = (
         UniqueConstraint("business_id", "symbol", name="business_security_price"),
+        CheckConstraint("price>0", name="price_greater_zero")
     )
 
     id = Column(Integer, primary_key=True)
     business_id = Column(Integer, ForeignKey("business.id"), nullable=False)
     symbol = Column(String, nullable=False)
-    price = Column(Float)
-    updated = Column(DateTime, nullable=False)
+    price = Column(Float, nullable=False)
+    updated = Column(DateTime, default=datetime.now(), nullable=False)
     account_position_prices = relationship(
         "AccountPositionPrice", back_populates="account_price"
     )
@@ -55,4 +58,4 @@ class BusinessPrice(Base):
     )
 
     def as_dict(self):
-        return {"id": self.id}
+        return { "id": self.id, "symbol": self.symbol, "price": self.price }

@@ -38,3 +38,7 @@ def test_model_position_collection_put(app, model, business):
             json={"business_id": business.id, "model_id": model.id, "positions": []},
         )
         assert response.status_code == 200
+
+
+def test_model_has_prices(app, model):
+    model.has_prices

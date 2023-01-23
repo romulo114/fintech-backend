@@ -15,14 +15,9 @@ def init_middlewares(app: Flask):
         Get Authorization-Bearer token
         '''
 
-        current_app.logger.debug(f'auth-middleware is running ...')
         g.user = None
-
         authenticator: Authenticator = container.get(Authenticator)
         g.user = authenticator.get_user_from_authorization(request)
-
-        if g.user:
-            current_app.logger.debug(f'authenticated user: {g.user.as_dict()}')
 
 
 def login_required():

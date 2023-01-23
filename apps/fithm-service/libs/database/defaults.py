@@ -43,6 +43,7 @@ def default_values(db_session):
         for row in reader:
             accounts = db_session.query(Account).filter(Account.business_id == row["business_id"]).all()
             if not accounts:
+                row["active"] = True if row["active"] == "True" else False
                 db_session.add(Account(**row))
     db_session.commit()
     with open("scripts/fixtures/trades.csv", "r") as file:

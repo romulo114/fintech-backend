@@ -12,6 +12,7 @@ services:
     command: bash -c "start.sh"
     depends_on:
       - database
+      - gateway
     restart: on-failure
     volumes:
       - ./apps/fithm-service/:/app/src/
@@ -84,6 +85,12 @@ services:
       POSTGRES_MULTIPLE_DATABASES: ${DATABASE_NAMES}
     ports:
       - 5432:5432
+    healthcheck:
+      test: ["curl", "-f", "http://localhost:5432"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
 volumes:
   data-volume:

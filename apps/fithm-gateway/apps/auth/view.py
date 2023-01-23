@@ -34,7 +34,6 @@ class AuthView:
             active=True,
         )
 
-        current_app.logger.debug(f"user: {user}")
         db_session.add(user)
         business = Business(user=user)
         db_session.add(business)
@@ -47,6 +46,9 @@ class AuthView:
         #
         # Thread(target=post_request).start()
 
+        g.user = user
+        current_app.logger.debug(f"user: {user.as_dict()}")
+        forward_request(path='/api/v1/business', body={"business_id": business.id, "create_business": True})
         return user.as_dict()
 
     def delete(self):
